@@ -83,7 +83,7 @@
                 </div>
             </div>
 
-            <h2 class="text-3xl font-extrabold text-gray-900 mb-2">Masuk ke Sistem</h2>
+            <h2 class="text-3xl font-extrabold text-gray-900 mb-2">Form Login</h2>
             <p class="text-sm text-gray-500 mb-8">Gunakan akun yang telah diberikan oleh Admin SEMON.</p>
 
             <!-- Session Status -->
@@ -112,7 +112,7 @@
                         </div>
                         <input id="email" name="email" type="email"
                             class="w-full pl-10 pr-4 py-3 text-sm border border-gray-300 rounded-xl bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-bps-500 focus:border-bps-500 outline-none transition {{ $errors->has('email') ? 'border-red-400 bg-red-50' : '' }}"
-                            placeholder="nama@semon.id"
+                            placeholder="nama.petugas@gmail.com"
                             value="{{ old('email') }}"
                             required autofocus autocomplete="email">
                     </div>
@@ -152,9 +152,8 @@
             <!-- Hint box -->
             <div class="mt-8 p-4 bg-bps-50 border border-bps-100 rounded-xl">
                 <p class="text-xs font-semibold text-bps-700 mb-1">ℹ️ Informasi Login</p>
-                <p class="text-xs text-bps-600">Format email: <strong>namaanda@semon.id</strong></p>
-                <p class="text-xs text-bps-600">Password: <strong>namakecil123</strong> (tanpa spasi)</p>
-                <p class="text-xs text-gray-400 mt-1">Contoh: Budi Santoso → <code>budisantoso@semon.id</code> / <code>budisantoso123</code></p>
+                <p class="text-xs text-bps-600">Silakan masuk menggunakan alamat email dan password resmi yang telah didaftarkan oleh Admin.</p>
+                <p class="text-xs text-gray-400 mt-1">Jika belum memiliki akun atau mengalami kendala, hubungi Admin/PIC BPS Kabupaten Bintan.</p>
             </div>
         </div>
     </div>

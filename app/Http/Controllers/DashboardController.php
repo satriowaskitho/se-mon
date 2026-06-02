@@ -58,4 +58,15 @@ class DashboardController extends Controller
 
         return view('admin.dashboard', compact('stats'));
     }
+
+    public function monitoring(Request $request)
+    {
+        $user = $request->user();
+
+        if ($user->role === 'pcl') {
+            abort(403, 'Unauthorized. PCL tidak memiliki akses ke halaman detail monitoring.');
+        }
+
+        return view('admin.monitoring');
+    }
 }

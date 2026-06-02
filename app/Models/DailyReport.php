@@ -19,6 +19,17 @@ class DailyReport extends Model
         'report_date' => 'date',
     ];
 
+    protected static function booted()
+    {
+        static::saved(function ($report) {
+            \Illuminate\Support\Facades\Cache::forget('kabupaten_stats');
+        });
+
+        static::deleted(function ($report) {
+            \Illuminate\Support\Facades\Cache::forget('kabupaten_stats');
+        });
+    }
+
     public function assignment(): BelongsTo
     {
         return $this->belongsTo(Assignment::class, 'assignment_id', 'id');

@@ -4,11 +4,7 @@ namespace App\Livewire;
 
 use App\Repositories\AssignmentRepository;
 use App\Services\MonitoringService;
-use App\Exports\MonitoringExport;
 use Livewire\Component;
-use Livewire\WithPagination;
-use Illuminate\Pagination\LengthAwarePaginator;
-use Maatwebsite\Excel\Facades\Excel;
 use Carbon\Carbon;
 use App\Models\District;
 use App\Models\Village;
@@ -16,11 +12,10 @@ use App\Models\Sls;
 use App\Models\SubSls;
 use App\Models\Pcl;
 use App\Models\Pml;
+use Illuminate\Support\Facades\Cache;
 
 class MonitoringDashboard extends Component
 {
-    use WithPagination;
-
     // Progress Monitoring Filters (Section 1)
     public $monitoringLevel = 'kec';
     public $dateFilter = '';
@@ -31,7 +26,7 @@ class MonitoringDashboard extends Component
     public $pmlFilter = '';
     public $keywordFilter = '';
 
-    // Daily Trend Analysis Filters (Section 2 - Independent)
+    // Daily Trend Analysis Filters (Section 2 - 100% Independent)
     public $trendEntityType = 'kab';
     public $trendEntityId = '';
     public $trendStartDate = '';
@@ -48,25 +43,6 @@ class MonitoringDashboard extends Component
     public $slsList = [];
     public $pclList = [];
     public $pmlList = [];
-
-    // Livewire Query String for bookmarkable state
-    protected $queryString = [
-        'monitoringLevel' => ['except' => 'kec'],
-        'dateFilter' => ['except' => ''],
-        'kecFilter' => ['except' => ''],
-        'desaFilter' => ['except' => ''],
-        'slsFilter' => ['except' => ''],
-        'pclFilter' => ['except' => ''],
-        'pmlFilter' => ['except' => ''],
-        'keywordFilter' => ['except' => ''],
-        'drillKecId' => ['except' => ''],
-        'drillDesaId' => ['except' => ''],
-        'drillSlsId' => ['except' => ''],
-        'trendEntityType' => ['except' => 'kab'],
-        'trendEntityId' => ['except' => ''],
-        'trendStartDate' => ['except' => ''],
-        'trendEndDate' => ['except' => ''],
-    ];
 
     public function mount()
     {
@@ -87,26 +63,17 @@ class MonitoringDashboard extends Component
         $this->slsFilter = '';
         $this->updateVillagesList();
         $this->updateSlsList();
-        $this->resetPage();
     }
 
     public function updatedDesaFilter()
     {
         $this->slsFilter = '';
         $this->updateSlsList();
-        $this->resetPage();
     }
 
     public function updatedTrendEntityType($value)
     {
         $this->trendEntityId = '';
-    }
-
-    public function updated($propertyName)
-    {
-        if (in_array($propertyName, ['dateFilter', 'slsFilter', 'pclFilter', 'pmlFilter', 'keywordFilter'])) {
-            $this->resetPage();
-        }
     }
 
     protected function updateVillagesList()
@@ -224,7 +191,6 @@ class MonitoringDashboard extends Component
                 });
             }
 
-            // Bind values in-memory to prevent database N+1 recalculations
             $a->usaha_realisasi = $reports->sum('usaha_today');
             $a->ruta_realisasi = $reports->sum('ruta_today');
             $a->progress_pct = $a->target_usaha > 0 ? ($a->usaha_realisasi / $a->target_usaha) * 100 : 0;
@@ -234,54 +200,8 @@ class MonitoringDashboard extends Component
         return $assignments;
     }
 
-    /**
-     * Export table data to Excel.
-     */
-    public function exportExcel(AssignmentRepository $assignmentRepo)
-    {
-        $data = $this->getExportData($assignmentRepo);
-        return Excel::download(new MonitoringExport($data), 'monitoring_se2026_' . now()->format('Ymd_His') . '.xlsx');
-    }
-
-    /**
-     * Export table data to CSV.
-     */
-    public function exportCsv(AssignmentRepository $assignmentRepo)
-    {
-        $data = $this->getExportData($assignmentRepo);
-        return Excel::download(new MonitoringExport($data), 'monitoring_se2026_' . now()->format('Ymd_His') . '.csv', \Maatwebsite\Excel\Excel::CSV);
-    }
-
-    protected function getExportData(AssignmentRepository $assignmentRepo): array
-    {
-        $assignments = $this->getFilteredAssignments($assignmentRepo);
-        $export = [];
-        $i = 1;
-
-        foreach ($assignments as $a) {
-            $status = $a->progress_pct < 50 ? 'Merah' : ($a->progress_pct < 80 ? 'Kuning' : 'Hijau');
-            $export[] = [
-                $i++,
-                $a->subsls->idsubsls,
-                $a->subsls->sls->village->district->nmkec ?? 'N/A',
-                $a->subsls->sls->village->nmdesa ?? 'N/A',
-                $a->subsls->sls->nmsls ?? 'N/A',
-                $a->pcl->nama ?? 'N/A',
-                $a->pml->nama ?? 'N/A',
-                $a->target_usaha,
-                $a->usaha_realisasi,
-                $a->ruta_realisasi,
-                round($a->progress_pct, 2),
-                $status,
-            ];
-        }
-
-        return $export;
-    }
-
     protected function getTrendTimelineData()
     {
-        // 1. Resolve assignments for selected trend scope globally (ignores Section 1 filtering as instructed)
         $trendAssignments = \App\Models\Assignment::with(['subsls.sls.village.district', 'dailyReports', 'pcl', 'pml'])->get();
 
         if ($this->trendEntityType === 'kec' && $this->trendEntityId) {
@@ -296,10 +216,8 @@ class MonitoringDashboard extends Component
             $trendAssignments = $trendAssignments->filter(fn($a) => (int)$a->pml_id === (int)$this->trendEntityId);
         }
 
-        // 2. Fetch daily reports and group by report_date
         $dailyReports = $trendAssignments->flatMap(fn($a) => $a->dailyReports);
 
-        // Filter by date range
         if ($this->trendStartDate) {
             $dailyReports = $dailyReports->filter(fn($r) => Carbon::parse($r->report_date)->format('Y-m-d') >= $this->trendStartDate);
         }
@@ -319,7 +237,6 @@ class MonitoringDashboard extends Component
         })
         ->sortBy('date');
 
-        // Fill in dates that have 0 entries to avoid empty categories/timeline breaks
         $categories = [];
         $usahaSeries = [];
         $rutaSeries = [];
@@ -343,15 +260,36 @@ class MonitoringDashboard extends Component
         ];
     }
 
+    protected function getProgressColor(float $percentage): string
+    {
+        if ($percentage < 50) {
+            return 'red';
+        } elseif ($percentage < 80) {
+            return 'yellow';
+        } else {
+            return 'green';
+        }
+    }
+
     public function render(AssignmentRepository $assignmentRepo, MonitoringService $monitoringService)
     {
-        // 1. Get filtered assignments (Section 1 scope)
+        // 1. GLOBAL Summary Cards (Cached for 300s, never filtered)
+        $stats = Cache::remember('kabupaten_stats', 300, function () use ($assignmentRepo, $monitoringService) {
+            $all = $assignmentRepo->getAllWithRelations();
+            $mapped = $all->map(function ($a) {
+                $reports = $a->dailyReports;
+                $a->usaha_realisasi = $reports->sum('usaha_today');
+                $a->ruta_realisasi = $reports->sum('ruta_today');
+                $a->progress_pct = $a->target_usaha > 0 ? ($a->usaha_realisasi / $a->target_usaha) * 100 : 0;
+                return $a;
+            });
+            return $monitoringService->getOverallStats($mapped);
+        });
+
+        // 2. Filtered assignments (for comparison Histogram, rankings)
         $filtered = $this->getFilteredAssignments($assignmentRepo);
 
-        // 2. Overall Stats
-        $stats = $monitoringService->getOverallStats($filtered);
-
-        // 3. Dynamic Progress aggregation based on selected level
+        // 3. Dynamic Progress Aggregation (Histogram)
         $chartProgress = collect();
         if ($this->monitoringLevel === 'kec') {
             $chartProgress = $monitoringService->getProgressByKecamatan($filtered);
@@ -365,55 +303,13 @@ class MonitoringDashboard extends Component
             $chartProgress = $monitoringService->getProgressByPml($filtered);
         }
 
-        // 4. Calculate Top 10 Best and Lowest Progress
+        // 4. Rankings (Top 10 Tertinggi & Terendah)
         $topProgress = $chartProgress->sortByDesc('percentage')->take(10)->values();
         $lowestProgress = $chartProgress->sortBy('percentage')->take(10)->values();
 
-        // 5. In-Memory Calculation for "PCL Perlu Perhatian" Alert Widget
-        $pclGroups = $filtered->groupBy('pcl_id');
-        $attentionPcls = [];
-
-        foreach ($pclGroups as $pclId => $group) {
-            $pclName = $group->first()->pcl->nama ?? 'N/A';
-            
-            // Calculate progress safely handling target = 0/null/missing penugasan
-            $target = $group->sum('target_usaha');
-            $realisasi = $group->sum('usaha_realisasi');
-            $pct = $target > 0 ? ($realisasi / $target) * 100 : 0;
-
-            // Find last activity date
-            $reports = $group->flatMap(fn($a) => $a->dailyReports);
-            $latestReport = $reports->sortByDesc('report_date')->first();
-            $lastActivity = $latestReport ? Carbon::parse($latestReport->report_date)->format('Y-m-d') : null;
-
-            // Check alert criteria (progress < 25% or no activity in 3 days)
-            $needsAttention = false;
-            $reason = '';
-            
-            if ($pct < 25) {
-                $needsAttention = true;
-                $reason = 'Progres di bawah 25%';
-            } elseif (!$lastActivity || Carbon::parse($lastActivity)->lt(Carbon::now()->subDays(3))) {
-                $needsAttention = true;
-                $reason = 'Tidak ada aktivitas > 3 hari';
-            }
-
-            if ($needsAttention) {
-                $attentionPcls[] = [
-                    'name' => $pclName,
-                    'progress' => round($pct, 2),
-                    'last_activity' => $lastActivity ?? 'Belum ada',
-                    'reason' => $reason
-                ];
-            }
-        }
-
-        // Sort by progress ascending so worst-performing PCLs show first
-        $attentionPcls = collect($attentionPcls)->sortBy('progress')->values();
-
-        // 6. Drill down calculation
+        // 5. Drill-down calculations
         $drillData = collect();
-        $drillLevel = 'kab';
+        $drillLevel = 'kec';
 
         if ($this->drillKecId && !$this->drillDesaId) {
             $drillLevel = 'desa';
@@ -481,25 +377,17 @@ class MonitoringDashboard extends Component
             });
         }
 
-        // 7. Paginated monitoring table list
-        $perPage = 10;
-        $currentPage = $this->getPage();
-        $currentPageItems = $filtered->slice(($currentPage - 1) * $perPage, $perPage)->values();
-        $paginated = new LengthAwarePaginator($currentPageItems, $filtered->count(), $perPage, $currentPage, [
-            'path' => url()->current(),
-        ]);
-
-        // 8. Independent daily timeline calculations for Section 2
+        // 7. Dynamic daily timeline for single-entity Trend Analysis (100% Independent)
         $trendTimeline = $this->getTrendTimelineData();
 
         $levelLabel = $this->monitoringLevel === 'kec' ? 'Kecamatan' : ($this->monitoringLevel === 'desa' ? 'Desa' : ($this->monitoringLevel === 'subsls' ? 'SubSLS' : ($this->monitoringLevel === 'pcl' ? 'PCL' : 'PML')));
 
-        // Dispatch updated chart options to frontend JS
+        // Dispatch updated chart options to frontend Alpine chart handler
         $this->dispatch('chart-data-updated', [
-            'kecCategories' => $chartProgress->take(10)->pluck('name')->toArray(),
-            'kecSeries' => $chartProgress->take(10)->pluck('percentage')->toArray(),
-            'kecTargets' => $chartProgress->take(10)->pluck('target')->toArray(),
-            'kecRealisasis' => $chartProgress->take(10)->pluck('realisasi')->toArray(),
+            'kecCategories' => $chartProgress->pluck('name')->toArray(),
+            'kecSeries' => $chartProgress->pluck('percentage')->toArray(),
+            'kecTargets' => $chartProgress->pluck('target')->toArray(),
+            'kecRealisasis' => $chartProgress->pluck('realisasi')->toArray(),
             'levelLabel' => $levelLabel,
             'timelineCategories' => $trendTimeline['categories'],
             'timelineUsaha' => $trendTimeline['usaha_series'],
@@ -508,14 +396,12 @@ class MonitoringDashboard extends Component
 
         return view('livewire.monitoring-dashboard', [
             'stats' => $stats,
-            'chartProgress' => $chartProgress->take(10), // Limit chart visual display to 10 for readability
+            'chartProgress' => $chartProgress,
             'topProgress' => $topProgress,
             'lowestProgress' => $lowestProgress,
-            'attentionPcls' => $attentionPcls,
             'drillData' => $drillData,
             'drillLevel' => $drillLevel,
             'drillBreadcrumbs' => $this->getDrillBreadcrumbs(),
-            'tableData' => $paginated,
             'trendTimeline' => $trendTimeline,
         ]);
     }
@@ -536,16 +422,5 @@ class MonitoringDashboard extends Component
             $crumbs[] = ['label' => $slsName, 'action' => ''];
         }
         return $crumbs;
-    }
-
-    protected function getProgressColor(float $percentage): string
-    {
-        if ($percentage < 50) {
-            return 'red';
-        } elseif ($percentage < 80) {
-            return 'yellow';
-        } else {
-            return 'green';
-        }
     }
 }

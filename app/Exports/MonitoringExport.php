@@ -7,9 +7,13 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Concerns\WithCustomValueBinder;
+use PhpOffice\PhpSpreadsheet\Cell\DefaultValueBinder;
+use PhpOffice\PhpSpreadsheet\Cell\Cell;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class MonitoringExport implements FromArray, WithHeadings, WithTitle, ShouldAutoSize, WithStyles
+class MonitoringExport extends DefaultValueBinder implements FromArray, WithHeadings, WithTitle, ShouldAutoSize, WithStyles, WithCustomValueBinder
 {
     protected array $data;
 
@@ -21,6 +25,20 @@ class MonitoringExport implements FromArray, WithHeadings, WithTitle, ShouldAuto
     public function array(): array
     {
         return $this->data;
+    }
+
+    /**
+     * Bind non-numeric column cells as DataType::TYPE_STRING explicitly.
+     */
+    public function bindValue(Cell $cell, $value)
+    {
+        $col = $cell->getColumn();
+        if (in_array($col, ['B', 'C', 'D', 'E', 'F', 'G', 'L'])) {
+            $cell->setValueExplicit((string)$value, DataType::TYPE_STRING);
+            return true;
+        }
+
+        return parent::bindValue($cell, $value);
     }
 
     public function headings(): array

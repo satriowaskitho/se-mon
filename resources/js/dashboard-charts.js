@@ -17,6 +17,7 @@ const registerCharts = () => {
     window.Alpine.data('dashboardCharts', (initCat = [], initSer = [], initRuta = [], initTargets = [], initRealisasis = [], initLevelLabel = 'Entitas') => ({
         chartKec: null,
         chartTimeline: null,
+        isEmpty: initSer.length === 0,
 
         init() {
             console.log('INIT CALLED - dashboardCharts initialized');
@@ -43,7 +44,7 @@ const registerCharts = () => {
                                 borderRadius: 6
                             }
                         },
-                        colors: ['#0c82eb'],
+                        colors: ['#f97316'],
                         dataLabels: {
                             enabled: true,
                             formatter: function (val) { return val + '%'; },
@@ -58,8 +59,10 @@ const registerCharts = () => {
                             labels: { rotate: -15, style: { fontSize: '10px' } }
                         },
                         yaxis: {
+                            min: 0,
                             max: function(max) {
-                                return Math.max(100, Math.ceil(max * 1.15));
+                                if (max <= 100) return 100;
+                                return Math.ceil(max / 10) * 10;
                             },
                             labels: { formatter: function (val) { return Math.round(val) + '%'; } }
                         },
@@ -159,25 +162,31 @@ const registerCharts = () => {
 
             console.log('updateCharts parsed payload:', data);
             
-            if (this.chartKec && data.kecSeries && data.kecCategories && this.$refs.kecChartCanvas) {
+            if (this.chartKec && this.$refs.kecChartCanvas) {
                 console.log('Updating chartKec...');
-                this.chartKec.updateOptions({
-                    series: [{ name: 'Progress', data: data.kecSeries }],
-                    xaxis: { categories: data.kecCategories },
-                    customTargets: data.kecTargets || [],
-                    customRealisasis: data.kecRealisasis || [],
-                    customLevelLabel: data.levelLabel || 'Entitas'
-                });
+                this.isEmpty = !data.kecSeries || data.kecSeries.length === 0;
+                if (!this.isEmpty) {
+                    this.chartKec.updateOptions({
+                        series: [{ name: 'Progress', data: data.kecSeries }],
+                        xaxis: { categories: data.kecCategories },
+                        customTargets: data.kecTargets || [],
+                        customRealisasis: data.kecRealisasis || [],
+                        customLevelLabel: data.levelLabel || 'Entitas'
+                    });
+                }
             }
-            if (this.chartTimeline && data.timelineUsaha && data.timelineCategories && this.$refs.timelineChartCanvas) {
+            if (this.chartTimeline && this.$refs.timelineChartCanvas) {
                 console.log('Updating chartTimeline...');
-                this.chartTimeline.updateOptions({
-                    series: [
-                        { name: 'Tambahan Usaha', data: data.timelineUsaha },
-                        { name: 'Tambahan Ruta', data: data.timelineRuta }
-                    ],
-                    xaxis: { categories: data.timelineCategories }
-                });
+                this.isEmpty = !data.timelineUsaha || data.timelineUsaha.length === 0;
+                if (!this.isEmpty) {
+                    this.chartTimeline.updateOptions({
+                        series: [
+                            { name: 'Tambahan Usaha', data: data.timelineUsaha },
+                            { name: 'Tambahan Ruta', data: data.timelineRuta }
+                        ],
+                        xaxis: { categories: data.timelineCategories }
+                    });
+                }
             }
         },
 

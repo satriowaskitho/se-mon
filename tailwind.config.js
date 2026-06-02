@@ -19,17 +19,17 @@ export default {
             },
             colors: {
                 bps: {
-                    50: '#f0f7ff',
-                    100: '#e0effe',
-                    200: '#bbddfe',
-                    300: '#7cc0fd',
-                    400: '#369ffa',
-                    500: '#0c82eb',
-                    600: '#0265c9',
-                    700: '#0250a3',
-                    800: '#064585',
-                    900: '#0b3b6f',
-                    950: '#07254a',
+                    50: '#fff7ed',   // orange-50
+                    100: '#ffedd5',  // orange-100
+                    200: '#fed7aa',  // orange-200 (light)
+                    300: '#fdba74',  // orange-300
+                    400: '#fb923c',  // orange-400 (soft)
+                    500: '#f97316',  // orange-500 (primary)
+                    600: '#ea580c',  // orange-600 (dark)
+                    700: '#c2410c',  // orange-700
+                    800: '#9a3412',  // orange-800
+                    900: '#7c2d12',  // orange-900
+                    950: '#431407',  // orange-950
                 },
                 progress: {
                     red: '#ef4444',

@@ -5,18 +5,31 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DailyReportController;
 use Illuminate\Support\Facades\Route;
 
-// Landing page → redirect to dashboard if logged in
+use App\Http\Controllers\LandingApiController;
+
+// Landing page
 Route::get('/', function () {
     if (auth()->check()) {
         return redirect()->route('dashboard');
     }
-    return redirect()->route('login');
-});
+    return view('landing.semon');
+})->name('landing');
+
+// Public API endpoints for landing page
+Route::get('/api/semon/landing-stats', [LandingApiController::class, 'getLandingStats']);
+Route::get('/api/semon/map-data', [LandingApiController::class, 'getMapData']);
+Route::get('/api/semon/map-progress', [LandingApiController::class, 'getMapProgress']);
+Route::get('/api/semon/kecamatan-breakdown/{idkec}', [LandingApiController::class, 'getKecamatanBreakdown']);
 
 // Dashboard — role-aware (all authenticated users)
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth'])
     ->name('dashboard');
+
+// Detail Monitoring (Admin and PML only)
+Route::get('/monitoring', [DashboardController::class, 'monitoring'])
+    ->middleware(['auth'])
+    ->name('monitoring');
 
 // PCL Daily Report CRUD
 Route::middleware(['auth', 'role:pcl,admin'])->group(function () {
