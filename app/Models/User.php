@@ -1,0 +1,58 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+
+class User extends Authenticatable
+{
+    use HasFactory, Notifiable;
+
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+        'role',
+    ];
+
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+        ];
+    }
+
+    public function pcl(): HasOne
+    {
+        return $this->hasOne(Pcl::class, 'user_id', 'id');
+    }
+
+    public function pml(): HasOne
+    {
+        return $this->hasOne(Pml::class, 'user_id', 'id');
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    public function isPcl(): bool
+    {
+        return $this->role === 'pcl';
+    }
+
+    public function isPml(): bool
+    {
+        return $this->role === 'pml';
+    }
+}
