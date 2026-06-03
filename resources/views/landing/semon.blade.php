@@ -88,7 +88,7 @@
     class="h-full overflow-hidden bg-white font-sans text-gray-800 antialiased selection:bg-orange-500 selection:text-white">
 
     <!-- Single Page App Wrapper -->
-    <div x-data="semonLanding" class="relative w-full h-full overflow-hidden select-none">
+    <div id="landing-wrapper" data-target-date="{{ $targetDate }}" x-data="semonLanding" class="relative w-full h-full overflow-hidden select-none">
 
         <!-- Static Layered Background System (100% stable, no CPU animation loop) -->
         <div class="absolute inset-0 pointer-events-none overflow-hidden z-[-10] bg-gradient-to-br from-orange-50 via-white to-orange-100">
@@ -284,12 +284,12 @@
                     </div>
                 </div>
 
-                <!-- LIVE STATS VIEW (Active after June 19) -->
+                <!-- LIVE STATS VIEW (Active after June 15) -->
                 <div x-show="isLaunched" x-cloak class="space-y-4">
                     <span
                         class="text-xs text-orange-600 font-extrabold tracking-widest uppercase flex items-center justify-center gap-1.5 bg-orange-100/50 px-4 py-1.5 border border-orange-200/50 rounded-full w-fit mx-auto animate-pulse">
                         <span class="w-2.5 h-2.5 bg-orange-500 rounded-full animate-ping"></span>
-                        Dashboard Live Monitoring Aktif
+                        Pelaksanaan SE2026 Sedang Berlangsung
                     </span>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
                         <!-- Target -->
@@ -320,6 +320,10 @@
                             <span class="text-2xl font-extrabold text-gray-900 mt-1"
                                 x-text="Number(stats.subsls).toLocaleString('id-ID')">751</span>
                         </div>
+                    </div>
+                    <!-- Empty state notice when progress is empty (Case A) -->
+                    <div x-show="stats.realisasi === 0" class="text-xs text-orange-800 font-bold bg-orange-50/50 px-4 py-2.5 border border-orange-150 rounded-2xl w-fit mx-auto mt-2">
+                        Data lapangan belum tersedia
                     </div>
                 </div>
 
@@ -498,9 +502,12 @@
                     seconds: '00'
                 },
 
-                targetDate: new Date('2026-06-19T00:00:00+07:00'),
+                targetDate: null,
 
                 init() {
+                    const wrapper = document.getElementById('landing-wrapper');
+                    const targetStr = wrapper ? wrapper.getAttribute('data-target-date') : '2026-06-15T00:00:00+07:00';
+                    this.targetDate = new Date(targetStr);
                     this.checkLaunch();
 
                     // Watch currentPanel to trigger Map initialization

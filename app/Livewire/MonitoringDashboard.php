@@ -271,10 +271,32 @@ class MonitoringDashboard extends Component
         }
     }
 
+    public function resetFilters()
+    {
+        $this->monitoringLevel = 'kec';
+        $this->dateFilter = '';
+        $this->kecFilter = '';
+        $this->desaFilter = '';
+        $this->slsFilter = '';
+        $this->pclFilter = '';
+        $this->pmlFilter = '';
+        $this->keywordFilter = '';
+        $this->updateVillagesList();
+        $this->updateSlsList();
+    }
+
+    public function resetTrend()
+    {
+        $this->trendEntityType = 'kab';
+        $this->trendEntityId = '';
+        $this->trendStartDate = Carbon::now()->subDays(13)->format('Y-m-d');
+        $this->trendEndDate = Carbon::now()->format('Y-m-d');
+    }
+
     public function render(AssignmentRepository $assignmentRepo, MonitoringService $monitoringService)
     {
-        // 1. GLOBAL Summary Cards (Cached for 300s, never filtered)
-        $stats = Cache::remember('kabupaten_stats', 300, function () use ($assignmentRepo, $monitoringService) {
+        // 1. GLOBAL Summary Cards (Cached for 60s, never filtered)
+        $stats = Cache::remember('kabupaten_stats', 60, function () use ($assignmentRepo, $monitoringService) {
             $all = $assignmentRepo->getAllWithRelations();
             $mapped = $all->map(function ($a) {
                 $reports = $a->dailyReports;
@@ -403,6 +425,7 @@ class MonitoringDashboard extends Component
             'drillLevel' => $drillLevel,
             'drillBreadcrumbs' => $this->getDrillBreadcrumbs(),
             'trendTimeline' => $trendTimeline,
+            'hasOperationalData' => \App\Models\DailyReport::exists(),
         ]);
     }
 

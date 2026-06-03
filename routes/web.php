@@ -12,7 +12,8 @@ Route::get('/', function () {
     if (auth()->check()) {
         return redirect()->route('dashboard');
     }
-    return view('landing.semon');
+    $targetDate = config('semon.target_date', '2026-06-15T00:00:00+07:00');
+    return view('landing.semon', compact('targetDate'));
 })->name('landing');
 
 // Public API endpoints for landing page

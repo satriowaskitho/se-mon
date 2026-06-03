@@ -23,169 +23,242 @@ const registerCharts = () => {
             console.log('INIT CALLED - dashboardCharts initialized');
 
             this.$nextTick(() => {
-                console.log('nextTick execution');
-                console.log('kec ref:', this.$refs.kecChartCanvas);
-                console.log('timeline ref:', this.$refs.timelineChartCanvas);
+                console.log('nextTick execution - preparing chart initialization');
 
-                // 1. Initialize Column Chart (only if ref exists in this DOM instance)
+                // 1. Initialize Column Chart if ref exists
                 if (this.$refs.kecChartCanvas) {
-                    console.log('Initializing chartKec with initial data');
-                    this.chartKec = new ApexCharts(this.$refs.kecChartCanvas, {
-                        chart: {
-                            type: 'bar',
-                            height: 320,
-                            toolbar: { show: false },
-                            fontFamily: 'Inter, sans-serif'
-                        },
-                        plotOptions: {
-                            bar: {
-                                horizontal: false,
-                                columnWidth: '45%',
-                                borderRadius: 6
-                            }
-                        },
-                        colors: ['#f97316'],
-                        dataLabels: {
-                            enabled: true,
-                            formatter: function (val) { return val + '%'; },
-                            style: { fontSize: '10px', colors: ['#ffffff'] }
-                        },
-                        series: [{
-                            name: 'Progress',
-                            data: initSer
-                        }],
-                        xaxis: {
-                            categories: initCat,
-                            labels: { rotate: -15, style: { fontSize: '10px' } }
-                        },
-                        yaxis: {
-                            min: 0,
-                            max: function(max) {
-                                if (max <= 100) return 100;
-                                return Math.ceil(max / 10) * 10;
-                            },
-                            labels: { formatter: function (val) { return Math.round(val) + '%'; } }
-                        },
-                        grid: { borderColor: '#f1f1f1' },
-                        // Store custom target, realisasi, and levelLabel in config to read inside custom tooltip
-                        customTargets: initTargets || [],
-                        customRealisasis: initRealisasis || [],
-                        customLevelLabel: initLevelLabel || 'Entitas',
-                        tooltip: {
-                            custom: function({ series, seriesIndex, dataPointIndex, w }) {
-                                const targets = w.config.customTargets || [];
-                                const realisasis = w.config.customRealisasis || [];
-                                const levelLabel = w.config.customLevelLabel || 'Entitas';
-                                
-                                const target = targets[dataPointIndex] !== undefined ? targets[dataPointIndex] : 0;
-                                const realisasi = realisasis[dataPointIndex] !== undefined ? realisasis[dataPointIndex] : 0;
-                                const progress = series[seriesIndex][dataPointIndex];
-                                const name = w.config.xaxis.categories[dataPointIndex] || '';
-
-                                return '<div class="p-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-xl text-xs font-semibold text-gray-700 dark:text-gray-300">' +
-                                       '<div class="font-extrabold text-gray-900 dark:text-white mb-1.5 border-b border-gray-100 dark:border-gray-800 pb-1.5">' + levelLabel + ': ' + name + '</div>' +
-                                       '<div class="flex justify-between gap-4 mb-1"><span>Target Usaha:</span><span class="font-bold text-gray-900 dark:text-white">' + Number(target).toLocaleString('id-ID') + '</span></div>' +
-                                       '<div class="flex justify-between gap-4 mb-1"><span>Realisasi Usaha:</span><span class="font-bold text-gray-900 dark:text-white">' + Number(realisasi).toLocaleString('id-ID') + '</span></div>' +
-                                       '<div class="flex justify-between gap-4"><span>Progress:</span><span class="font-extrabold text-bps-600 dark:text-bps-400">' + Number(progress).toFixed(2) + '%</span></div>' +
-                                       '</div>';
-                            }
-                        }
-                    });
-                    this.chartKec.render();
+                    this.initChartKecWithData(initSer, initCat, initTargets, initRealisasis, initLevelLabel);
                 }
 
-                // 2. Initialize Daily progress timeline (only if ref exists in this DOM instance)
+                // 2. Initialize Daily progress timeline if ref exists
                 if (this.$refs.timelineChartCanvas) {
-                    console.log('Initializing chartTimeline with initial data');
-                    this.chartTimeline = new ApexCharts(this.$refs.timelineChartCanvas, {
-                        chart: {
-                            type: 'area',
-                            height: 320,
-                            toolbar: { show: false },
-                            fontFamily: 'Inter, sans-serif'
-                        },
-                        colors: ['#10b981', '#a855f7'],
-                        dataLabels: { enabled: false },
-                        stroke: { curve: 'smooth', width: 3 },
-                        fill: {
-                            type: 'gradient',
-                            gradient: { shadeIntensity: 1, opacityFrom: 0.3, opacityTo: 0.05 }
-                        },
-                        series: [
-                            { name: 'Tambahan Usaha', data: initSer },
-                            { name: 'Tambahan Ruta', data: initRuta }
-                        ],
-                        xaxis: {
-                            categories: initCat,
-                            labels: { style: { fontSize: '9px' } }
-                        },
-                        grid: { borderColor: '#f1f1f1' },
-                        legend: {
-                            show: true,
-                            position: 'top',
-                            horizontalAlign: 'right',
-                            fontSize: '11px',
-                            fontFamily: 'Inter, sans-serif',
-                            fontWeight: 600,
-                            labels: { colors: '#4b5563' },
-                            markers: { radius: 12 }
-                        },
-                        tooltip: {
-                            custom: function({ series, seriesIndex, dataPointIndex, w }) {
-                                const dateStr = w.config.xaxis.categories[dataPointIndex] || '';
-                                const indonesianDate = formatIndonesianDate(dateStr);
-                                
-                                const usaha = series[0][dataPointIndex] !== undefined ? series[0][dataPointIndex] : 0;
-                                const ruta = series[1][dataPointIndex] !== undefined ? series[1][dataPointIndex] : 0;
-                                
-                                return '<div class="p-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-xl text-xs font-semibold text-gray-700 dark:text-gray-300">' +
-                                       '<div class="font-extrabold text-gray-900 dark:text-white mb-1.5 border-b border-gray-100 dark:border-gray-800 pb-1.5">' + indonesianDate + '</div>' +
-                                       '<div class="flex justify-between gap-4 mb-1"><span>Tambahan Usaha:</span><span class="font-bold text-emerald-600 dark:text-emerald-400">' + Number(usaha).toLocaleString('id-ID') + '</span></div>' +
-                                       '<div class="flex justify-between gap-4"><span>Tambahan Ruta:</span><span class="font-bold text-purple-600 dark:text-purple-400">' + Number(ruta).toLocaleString('id-ID') + '</span></div>' +
-                                       '</div>';
-                            }
-                        }
-                    });
-                    this.chartTimeline.render();
+                    // For timeline, parameters are: initCat (dates), initSer (usaha), initRuta (ruta)
+                    this.initChartTimelineWithData(initCat, initSer, initRuta);
                 }
             });
         },
 
+        initChartKecWithData(series, categories, targets, realisasis, levelLabel) {
+            if (this.chartKec) return; // Initialize only once
+            const canvas = this.$refs.kecChartCanvas;
+            if (!canvas) return;
+
+            const render = () => {
+                if (this.chartKec) return;
+                
+                // Verify offset dimensions
+                if (canvas.offsetWidth === 0 || canvas.offsetHeight === 0) {
+                    console.log('chartKec has 0 dimensions, skipping render.');
+                    return;
+                }
+
+                console.log('Initializing chartKec with data');
+                this.chartKec = new ApexCharts(canvas, {
+                    chart: {
+                        type: 'bar',
+                        height: '100%',
+                        toolbar: { show: false },
+                        fontFamily: 'Inter, sans-serif',
+                        animations: { enabled: true }
+                    },
+                    plotOptions: {
+                        bar: {
+                            horizontal: false,
+                            columnWidth: '45%',
+                            borderRadius: 6
+                        }
+                    },
+                    colors: ['#f97316'],
+                    dataLabels: {
+                        enabled: true,
+                        formatter: function (val) { return val + '%'; },
+                        style: { fontSize: '10px', colors: ['#ffffff'] }
+                    },
+                    series: [{
+                        name: 'Progress',
+                        data: series
+                    }],
+                    xaxis: {
+                        categories: categories,
+                        labels: { rotate: -15, style: { fontSize: '10px' } }
+                    },
+                    yaxis: {
+                        min: 0,
+                        max: function(max) {
+                            if (max <= 100) return 100;
+                            return Math.ceil(max / 10) * 10;
+                        },
+                        labels: { formatter: function (val) { return Math.round(val) + '%'; } }
+                    },
+                    grid: { borderColor: '#f1f1f1' },
+                    customTargets: targets || [],
+                    customRealisasis: realisasis || [],
+                    customLevelLabel: levelLabel || 'Entitas',
+                    tooltip: {
+                        custom: function({ series, seriesIndex, dataPointIndex, w }) {
+                            const tgts = w.config.customTargets || [];
+                            const reals = w.config.customRealisasis || [];
+                            const lvl = w.config.customLevelLabel || 'Entitas';
+                            
+                            const target = tgts[dataPointIndex] !== undefined ? tgts[dataPointIndex] : 0;
+                            const realisasi = reals[dataPointIndex] !== undefined ? reals[dataPointIndex] : 0;
+                            const progress = series[seriesIndex][dataPointIndex];
+                            const name = w.config.xaxis.categories[dataPointIndex] || '';
+
+                            return '<div class="p-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-xl text-xs font-semibold text-gray-700 dark:text-gray-300">' +
+                                   '<div class="font-extrabold text-gray-900 dark:text-white mb-1.5 border-b border-gray-100 dark:border-gray-800 pb-1.5">' + lvl + ': ' + name + '</div>' +
+                                   '<div class="flex justify-between gap-4 mb-1"><span>Target Usaha:</span><span class="font-bold text-gray-900 dark:text-white">' + Number(target).toLocaleString('id-ID') + '</span></div>' +
+                                   '<div class="flex justify-between gap-4 mb-1"><span>Realisasi Usaha:</span><span class="font-bold text-gray-900 dark:text-white">' + Number(realisasi).toLocaleString('id-ID') + '</span></div>' +
+                                   '<div class="flex justify-between gap-4"><span>Progress:</span><span class="font-extrabold text-bps-600 dark:text-bps-400">' + Number(progress).toFixed(2) + '%</span></div>' +
+                                   '</div>';
+                        }
+                    }
+                });
+                this.chartKec.render();
+            };
+
+            if (canvas.offsetWidth > 0 && canvas.offsetHeight > 0) {
+                render();
+            } else {
+                // Retry once using requestAnimationFrame
+                requestAnimationFrame(() => {
+                    if (canvas.offsetWidth > 0 && canvas.offsetHeight > 0) {
+                        render();
+                    } else {
+                        console.log('chartKec second attempt has 0 dimensions, aborting.');
+                    }
+                });
+            }
+        },
+
+        initChartTimelineWithData(categories, usahaSeries, rutaSeries) {
+            if (this.chartTimeline) return; // Initialize only once
+            const canvas = this.$refs.timelineChartCanvas;
+            if (!canvas) return;
+
+            const render = () => {
+                if (this.chartTimeline) return;
+                
+                // Verify offset dimensions
+                if (canvas.offsetWidth === 0 || canvas.offsetHeight === 0) {
+                    console.log('chartTimeline has 0 dimensions, skipping render.');
+                    return;
+                }
+
+                console.log('Initializing chartTimeline with data');
+                this.chartTimeline = new ApexCharts(canvas, {
+                    chart: {
+                        type: 'area',
+                        height: '100%',
+                        toolbar: { show: false },
+                        fontFamily: 'Inter, sans-serif',
+                        animations: { enabled: true }
+                    },
+                    colors: ['#10b981', '#a855f7'],
+                    dataLabels: { enabled: false },
+                    stroke: { curve: 'smooth', width: 3 },
+                    fill: {
+                        type: 'gradient',
+                        gradient: { shadeIntensity: 1, opacityFrom: 0.3, opacityTo: 0.05 }
+                    },
+                    series: [
+                        { name: 'Tambahan Usaha', data: usahaSeries },
+                        { name: 'Tambahan Ruta', data: rutaSeries }
+                    ],
+                    xaxis: {
+                        categories: categories,
+                        labels: { style: { fontSize: '9px' } }
+                    },
+                    grid: { borderColor: '#f1f1f1' },
+                    legend: {
+                        show: true,
+                        position: 'top',
+                        horizontalAlign: 'right',
+                        fontSize: '11px',
+                        fontFamily: 'Inter, sans-serif',
+                        fontWeight: 600,
+                        labels: { colors: '#4b5563' },
+                        markers: { radius: 12 }
+                    },
+                    tooltip: {
+                        custom: function({ series, seriesIndex, dataPointIndex, w }) {
+                            const dateStr = w.config.xaxis.categories[dataPointIndex] || '';
+                            const indonesianDate = formatIndonesianDate(dateStr);
+                            
+                            const usaha = series[0][dataPointIndex] !== undefined ? series[0][dataPointIndex] : 0;
+                            const ruta = series[1][dataPointIndex] !== undefined ? series[1][dataPointIndex] : 0;
+                            
+                            return '<div class="p-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-xl text-xs font-semibold text-gray-700 dark:text-gray-300">' +
+                                   '<div class="font-extrabold text-gray-900 dark:text-white mb-1.5 border-b border-gray-100 dark:border-gray-800 pb-1.5">' + indonesianDate + '</div>' +
+                                   '<div class="flex justify-between gap-4 mb-1"><span>Tambahan Usaha:</span><span class="font-bold text-emerald-600 dark:text-emerald-400">' + Number(usaha).toLocaleString('id-ID') + '</span></div>' +
+                                   '<div class="flex justify-between gap-4"><span>Tambahan Ruta:</span><span class="font-bold text-purple-600 dark:text-purple-400">' + Number(ruta).toLocaleString('id-ID') + '</span></div>' +
+                                   '</div>';
+                        }
+                    }
+                });
+                this.chartTimeline.render();
+            };
+
+            if (canvas.offsetWidth > 0 && canvas.offsetHeight > 0) {
+                render();
+            } else {
+                // Retry once using requestAnimationFrame
+                requestAnimationFrame(() => {
+                    if (canvas.offsetWidth > 0 && canvas.offsetHeight > 0) {
+                        render();
+                    } else {
+                        console.log('chartTimeline second attempt has 0 dimensions, aborting.');
+                    }
+                });
+            }
+        },
+
         updateCharts(data) {
-            console.log('updateCharts called with raw data:', data);
+            console.log('updateCharts event received:', data);
             
             // Livewire v3 events wrap parameters inside an array
             if (Array.isArray(data)) {
                 data = data[0];
             }
             if (!data) return;
-
-            console.log('updateCharts parsed payload:', data);
             
-            if (this.chartKec && this.$refs.kecChartCanvas) {
-                console.log('Updating chartKec...');
+            // Handle Histogram (Kec chart) updates
+            if (this.$refs.kecChartCanvas) {
                 this.isEmpty = !data.kecSeries || data.kecSeries.length === 0;
                 if (!this.isEmpty) {
-                    this.chartKec.updateOptions({
-                        series: [{ name: 'Progress', data: data.kecSeries }],
-                        xaxis: { categories: data.kecCategories },
-                        customTargets: data.kecTargets || [],
-                        customRealisasis: data.kecRealisasis || [],
-                        customLevelLabel: data.levelLabel || 'Entitas'
-                    });
+                    if (!this.chartKec) {
+                        // Defer initialization if not created yet
+                        this.initChartKecWithData(data.kecSeries, data.kecCategories, data.kecTargets, data.kecRealisasis, data.levelLabel);
+                    } else {
+                        // Safe update without recreating
+                        this.chartKec.updateOptions({
+                            series: [{ name: 'Progress', data: data.kecSeries }],
+                            xaxis: { categories: data.kecCategories },
+                            customTargets: data.kecTargets || [],
+                            customRealisasis: data.kecRealisasis || [],
+                            customLevelLabel: data.levelLabel || 'Entitas'
+                        });
+                    }
                 }
             }
-            if (this.chartTimeline && this.$refs.timelineChartCanvas) {
-                console.log('Updating chartTimeline...');
+
+            // Handle Timeline updates
+            if (this.$refs.timelineChartCanvas) {
                 this.isEmpty = !data.timelineUsaha || data.timelineUsaha.length === 0;
                 if (!this.isEmpty) {
-                    this.chartTimeline.updateOptions({
-                        series: [
-                            { name: 'Tambahan Usaha', data: data.timelineUsaha },
-                            { name: 'Tambahan Ruta', data: data.timelineRuta }
-                        ],
-                        xaxis: { categories: data.timelineCategories }
-                    });
+                    if (!this.chartTimeline) {
+                        // Defer initialization if not created yet
+                        this.initChartTimelineWithData(data.timelineCategories, data.timelineUsaha, data.timelineRuta);
+                    } else {
+                        // Safe update without recreating
+                        this.chartTimeline.updateOptions({
+                            series: [
+                                { name: 'Tambahan Usaha', data: data.timelineUsaha },
+                                { name: 'Tambahan Ruta', data: data.timelineRuta }
+                            ],
+                            xaxis: { categories: data.timelineCategories }
+                        });
+                    }
                 }
             }
         },
@@ -198,6 +271,7 @@ const registerCharts = () => {
                 } catch (e) {
                     console.log('Safe chartKec destroy caught:', e.message);
                 }
+                this.chartKec = null;
             }
             if (this.chartTimeline) {
                 try {
@@ -205,6 +279,7 @@ const registerCharts = () => {
                 } catch (e) {
                     console.log('Safe chartTimeline destroy caught:', e.message);
                 }
+                this.chartTimeline = null;
             }
         }
     }));
@@ -215,3 +290,4 @@ if (window.Alpine) {
 } else {
     document.addEventListener('alpine:init', registerCharts);
 }
+

@@ -101,7 +101,7 @@
                 </div>
 
                 <div class="sm:col-span-2 grid grid-cols-1 gap-2.5 sm:flex sm:flex-wrap sm:items-end sm:justify-end sm:gap-3 pt-2">
-                    <button wire:click="$set('search', ''); $set('kecFilter', ''); $set('desaFilter', ''); $set('pmlFilter', ''); $set('pclFilter', ''); $set('statusFilter', ''); resetPage();" class="text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 px-4 py-2.5 rounded-xl dark:bg-red-950/20 dark:text-red-400 dark:hover:bg-red-950/40 transition w-full sm:w-auto text-center">
+                    <button wire:click="resetTable" class="text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 px-4 py-2.5 rounded-xl dark:bg-red-950/20 dark:text-red-400 dark:hover:bg-red-950/40 transition w-full sm:w-auto text-center">
                         Reset Semua Filter
                     </button>
                     <button wire:click="exportExcel" class="inline-flex items-center justify-center px-4 py-2.5 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-xl dark:bg-emerald-950/20 dark:text-emerald-400 dark:hover:bg-emerald-950/40 transition w-full sm:w-auto">
@@ -133,7 +133,25 @@
             </div>
         </div>
 
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto relative min-h-[300px]">
+            <!-- Target-specific Skeleton Loader (Case C) -->
+            <div wire:loading wire:target="search, kecFilter, desaFilter, pmlFilter, pclFilter, statusFilter, sortField, sortDirection, resetTable, gotoPage, previousPage, nextPage" class="absolute inset-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur-[2px] z-20 flex flex-col p-6 space-y-4 animate-pulse">
+                <span class="text-xs font-bold text-gray-400">Memproses filter...</span>
+                <div class="space-y-3.5 mt-2">
+                    <div class="h-8 bg-gray-200 dark:bg-gray-700 rounded-lg w-full"></div>
+                    @for($i = 0; $i < 6; $i++)
+                        <div class="flex gap-4">
+                            <div class="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/12"></div>
+                            <div class="h-6 bg-gray-200 dark:bg-gray-700 rounded w-2/12"></div>
+                            <div class="h-6 bg-gray-200 dark:bg-gray-700 rounded w-2/12"></div>
+                            <div class="h-6 bg-gray-200 dark:bg-gray-700 rounded w-3/12"></div>
+                            <div class="h-6 bg-gray-200 dark:bg-gray-700 rounded w-2/12"></div>
+                            <div class="h-6 bg-gray-200 dark:bg-gray-700 rounded w-2/12"></div>
+                        </div>
+                    @endfor
+                </div>
+            </div>
+
             <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                 <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-850 dark:text-gray-300 select-none">
                     <tr>
@@ -294,7 +312,26 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="12" class="px-6 py-12 text-center text-gray-500 font-semibold">Tidak ditemukan data monitoring yang sesuai dengan kriteria filter.</td>
+                            <td colspan="12" class="px-6 py-12 text-center text-gray-500 font-semibold bg-gray-50/20">
+                                @if(!$hasOperationalData)
+                                    <div class="flex flex-col items-center justify-center p-6 text-center">
+                                        <svg class="w-10 h-10 text-orange-500 dark:text-orange-400 mb-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                                        </svg>
+                                        <p class="text-xs font-bold text-gray-500 dark:text-gray-400">Belum ada progres pencacahan yang masuk.</p>
+                                    </div>
+                                @else
+                                    <div class="flex flex-col items-center justify-center p-6 text-center">
+                                        <svg class="w-10 h-10 text-gray-400 dark:text-gray-655 mb-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                                        </svg>
+                                        <p class="text-xs font-bold text-gray-500 dark:text-gray-400 mb-2.5">Tidak ada data yang sesuai filter.</p>
+                                        <button wire:click="resetTable" class="px-3.5 py-1.5 bg-bps-600 hover:bg-bps-700 text-[10px] font-bold text-white rounded-lg shadow-sm transition">
+                                            Reset Table
+                                        </button>
+                                    </div>
+                                @endif
+                            </td>
                         </tr>
                     @endforelse
                 </tbody>

@@ -27,6 +27,17 @@ class MonitoringDetail extends Component
     public $sortField = 'progress_pct';
     public $sortDirection = 'asc';
 
+    protected $queryString = [
+        'search' => ['except' => ''],
+        'kecFilter' => ['except' => ''],
+        'desaFilter' => ['except' => ''],
+        'pmlFilter' => ['except' => ''],
+        'pclFilter' => ['except' => ''],
+        'statusFilter' => ['except' => ''],
+        'sortField' => ['except' => 'progress_pct'],
+        'sortDirection' => ['except' => 'asc'],
+    ];
+
     // Dropdown Lists
     public $districtsList = [];
     public $villagesList = [];
@@ -194,12 +205,27 @@ class MonitoringDetail extends Component
         return $exportService->exportCsv($this->buildQuery());
     }
 
+    public function resetTable()
+    {
+        $this->search = '';
+        $this->kecFilter = '';
+        $this->desaFilter = '';
+        $this->pmlFilter = '';
+        $this->pclFilter = '';
+        $this->statusFilter = '';
+        $this->sortField = 'progress_pct';
+        $this->sortDirection = 'asc';
+        $this->updateVillagesList();
+        $this->resetPage();
+    }
+
     public function render()
     {
         $paginated = $this->buildQuery()->paginate(15);
 
         return view('livewire.monitoring-detail', [
             'tableData' => $paginated,
+            'hasOperationalData' => \App\Models\DailyReport::exists(),
         ]);
     }
 }

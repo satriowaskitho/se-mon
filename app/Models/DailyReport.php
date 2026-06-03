@@ -21,13 +21,14 @@ class DailyReport extends Model
 
     protected static function booted()
     {
-        static::saved(function ($report) {
+        $clearCache = function () {
             \Illuminate\Support\Facades\Cache::forget('kabupaten_stats');
-        });
+            \Illuminate\Support\Facades\Cache::forget('landing_stats');
+            \Illuminate\Support\Facades\Cache::forget('map_progress');
+        };
 
-        static::deleted(function ($report) {
-            \Illuminate\Support\Facades\Cache::forget('kabupaten_stats');
-        });
+        static::saved($clearCache);
+        static::deleted($clearCache);
     }
 
     public function assignment(): BelongsTo
