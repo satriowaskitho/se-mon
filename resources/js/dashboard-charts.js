@@ -16,35 +16,56 @@ const registerCharts = () => {
 
     window.Alpine.data('dashboardCharts', (initCat = [], initSer = [], initRuta = [], initTargets = [], initRealisasis = [], initLevelLabel = 'Entitas') => ({
         chartKec: null,
+        kecChart: null,
         chartTimeline: null,
         isEmpty: initSer.length === 0,
 
+        // Stored state for Trend Chart
+        trendCategories: initCat,
+        trendUsaha: initSer,
+        trendRuta: initRuta,
+
         init() {
-            console.log('INIT CALLED - dashboardCharts initialized');
+            console.log('INIT CALLED');
+
+            // 4. Prevent Duplicate Event Listener
+            if (window.dashboardUpdateHandler) {
+                window.removeEventListener('updateCharts', window.dashboardUpdateHandler);
+            }
+            window.dashboardUpdateHandler = (e) => {
+                this.updateCharts(e.detail || e);
+            };
+            window.addEventListener('updateCharts', window.dashboardUpdateHandler);
 
             this.$nextTick(() => {
-                console.log('nextTick execution - preparing chart initialization');
-
                 // 1. Initialize Column Chart if ref exists
                 if (this.$refs.kecChartCanvas) {
                     this.initChartKecWithData(initSer, initCat, initTargets, initRealisasis, initLevelLabel);
                 }
 
-                // 2. Initialize Daily progress timeline if ref exists
-                if (this.$refs.timelineChartCanvas) {
-                    // For timeline, parameters are: initCat (dates), initSer (usaha), initRuta (ruta)
+                // 2. Initialize Daily progress timeline if container exists
+                if (document.querySelector('#trend-chart')) {
                     this.initChartTimelineWithData(initCat, initSer, initRuta);
                 }
             });
         },
 
         initChartKecWithData(series, categories, targets, realisasis, levelLabel) {
-            if (this.chartKec) return; // Initialize only once
+            if (this.chartKec) {
+                try { this.chartKec.destroy(); } catch (e) {}
+                this.chartKec = null;
+            }
+            if (this.kecChart) {
+                try { this.kecChart.destroy(); } catch (e) {}
+                this.kecChart = null;
+            }
+
             const canvas = this.$refs.kecChartCanvas;
             if (!canvas) return;
+            canvas.innerHTML = '';
 
             const render = () => {
-                if (this.chartKec) return;
+                if (this.chartKec || this.kecChart) return;
                 
                 // Verify offset dimensions
                 if (canvas.offsetWidth === 0 || canvas.offsetHeight === 0) {
@@ -53,7 +74,7 @@ const registerCharts = () => {
                 }
 
                 console.log('Initializing chartKec with data');
-                this.chartKec = new ApexCharts(canvas, {
+                const chartInstance = new ApexCharts(canvas, {
                     chart: {
                         type: 'bar',
                         height: '100%',
@@ -114,7 +135,10 @@ const registerCharts = () => {
                         }
                     }
                 });
-                this.chartKec.render();
+
+                chartInstance.render();
+                this.chartKec = chartInstance;
+                this.kecChart = chartInstance;
             };
 
             if (canvas.offsetWidth > 0 && canvas.offsetHeight > 0) {
@@ -132,21 +156,27 @@ const registerCharts = () => {
         },
 
         initChartTimelineWithData(categories, usahaSeries, rutaSeries) {
-            if (this.chartTimeline) return; // Initialize only once
-            const canvas = this.$refs.timelineChartCanvas;
-            if (!canvas) return;
+            const el = document.querySelector('#trend-chart');
+            if (!el) return;
+
+            if (this.chartTimeline && this.chartTimeline.el !== el) {
+                try { this.chartTimeline.destroy(); } catch (e) {}
+                this.chartTimeline = null;
+                window.trendChart = null;
+            }
 
             const render = () => {
                 if (this.chartTimeline) return;
                 
                 // Verify offset dimensions
-                if (canvas.offsetWidth === 0 || canvas.offsetHeight === 0) {
+                if (el.offsetWidth === 0 || el.offsetHeight === 0) {
                     console.log('chartTimeline has 0 dimensions, skipping render.');
                     return;
                 }
 
                 console.log('Initializing chartTimeline with data');
-                this.chartTimeline = new ApexCharts(canvas, {
+                el.innerHTML = '';
+                const chartInstance = new ApexCharts(el, {
                     chart: {
                         type: 'area',
                         height: '100%',
@@ -196,15 +226,18 @@ const registerCharts = () => {
                         }
                     }
                 });
-                this.chartTimeline.render();
+                
+                chartInstance.render();
+                this.chartTimeline = chartInstance;
+                window.trendChart = chartInstance;
             };
 
-            if (canvas.offsetWidth > 0 && canvas.offsetHeight > 0) {
+            if (el.offsetWidth > 0 && el.offsetHeight > 0) {
                 render();
             } else {
                 // Retry once using requestAnimationFrame
                 requestAnimationFrame(() => {
-                    if (canvas.offsetWidth > 0 && canvas.offsetHeight > 0) {
+                    if (el.offsetWidth > 0 && el.offsetHeight > 0) {
                         render();
                     } else {
                         console.log('chartTimeline second attempt has 0 dimensions, aborting.');
@@ -214,7 +247,7 @@ const registerCharts = () => {
         },
 
         updateCharts(data) {
-            console.log('updateCharts event received:', data);
+            console.log('updateCharts received', data);
             
             // Livewire v3 events wrap parameters inside an array
             if (Array.isArray(data)) {
@@ -226,12 +259,13 @@ const registerCharts = () => {
             if (this.$refs.kecChartCanvas) {
                 this.isEmpty = !data.kecSeries || data.kecSeries.length === 0;
                 if (!this.isEmpty) {
-                    if (!this.chartKec) {
+                    if (!this.chartKec && !this.kecChart) {
                         // Defer initialization if not created yet
                         this.initChartKecWithData(data.kecSeries, data.kecCategories, data.kecTargets, data.kecRealisasis, data.levelLabel);
                     } else {
                         // Safe update without recreating
-                        this.chartKec.updateOptions({
+                        const activeChart = this.chartKec || this.kecChart;
+                        activeChart.updateOptions({
                             series: [{ name: 'Progress', data: data.kecSeries }],
                             xaxis: { categories: data.kecCategories },
                             customTargets: data.kecTargets || [],
@@ -243,21 +277,35 @@ const registerCharts = () => {
             }
 
             // Handle Timeline updates
-            if (this.$refs.timelineChartCanvas) {
+            const el = document.querySelector('#trend-chart');
+            if (el) {
                 this.isEmpty = !data.timelineUsaha || data.timelineUsaha.length === 0;
                 if (!this.isEmpty) {
-                    if (!this.chartTimeline) {
-                        // Defer initialization if not created yet
-                        this.initChartTimelineWithData(data.timelineCategories, data.timelineUsaha, data.timelineRuta);
-                    } else {
-                        // Safe update without recreating
+                    this.trendCategories = data.timelineCategories;
+                    this.trendUsaha = data.timelineUsaha;
+                    this.trendRuta = data.timelineRuta;
+                    
+                    // Recreate ONLY if container actually changes
+                    if (this.chartTimeline && this.chartTimeline.el !== el) {
+                        console.log('destroy');
+                        try { this.chartTimeline.destroy(); } catch (e) {}
+                        this.chartTimeline = null;
+                        window.trendChart = null;
+                    }
+
+                    if (this.chartTimeline) {
+                        console.log('chartTimeline.updateSeries()');
+                        this.chartTimeline.updateSeries([
+                            { name: 'Tambahan Usaha', data: data.timelineUsaha },
+                            { name: 'Tambahan Ruta', data: data.timelineRuta }
+                        ]);
                         this.chartTimeline.updateOptions({
-                            series: [
-                                { name: 'Tambahan Usaha', data: data.timelineUsaha },
-                                { name: 'Tambahan Ruta', data: data.timelineRuta }
-                            ],
-                            xaxis: { categories: data.timelineCategories }
-                        });
+                            xaxis: {
+                                categories: data.timelineCategories
+                            }
+                        }, false, true);
+                    } else {
+                        this.initChartTimelineWithData(data.timelineCategories, data.timelineUsaha, data.timelineRuta);
                     }
                 }
             }
@@ -273,6 +321,14 @@ const registerCharts = () => {
                 }
                 this.chartKec = null;
             }
+            if (this.kecChart) {
+                try {
+                    this.kecChart.destroy();
+                } catch (e) {
+                    console.log('Safe kecChart destroy caught:', e.message);
+                }
+                this.kecChart = null;
+            }
             if (this.chartTimeline) {
                 try {
                     this.chartTimeline.destroy();
@@ -280,6 +336,14 @@ const registerCharts = () => {
                     console.log('Safe chartTimeline destroy caught:', e.message);
                 }
                 this.chartTimeline = null;
+            }
+            if (window.trendChart) {
+                try {
+                    window.trendChart.destroy();
+                } catch (e) {
+                    console.log('Safe window.trendChart destroy caught:', e.message);
+                }
+                window.trendChart = null;
             }
         }
     }));

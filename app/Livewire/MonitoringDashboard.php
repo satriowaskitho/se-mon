@@ -12,6 +12,7 @@ use App\Models\Sls;
 use App\Models\SubSls;
 use App\Models\Pcl;
 use App\Models\Pml;
+use Livewire\Attributes\Computed;
 use Illuminate\Support\Facades\Cache;
 
 class MonitoringDashboard extends Component
@@ -36,6 +37,7 @@ class MonitoringDashboard extends Component
     public $drillKecId = '';
     public $drillDesaId = '';
     public $drillSlsId = '';
+    public $drillPmlId = '';
 
     // Lists for dropdown filters
     public $districtsList = [];
@@ -111,6 +113,17 @@ class MonitoringDashboard extends Component
         return collect();
     }
 
+    public function updatedMonitoringLevel($value)
+    {
+        if (!in_array($value, ['kec', 'desa', 'pml'])) {
+            $this->monitoringLevel = 'kec';
+        }
+        $this->drillKecId = '';
+        $this->drillDesaId = '';
+        $this->drillSlsId = '';
+        $this->drillPmlId = '';
+    }
+
     // Drill Down handlers
     public function selectDrillKec($idkec)
     {
@@ -128,6 +141,11 @@ class MonitoringDashboard extends Component
     public function selectDrillSls($idsls)
     {
         $this->drillSlsId = $idsls;
+    }
+
+    public function selectDrillPml($idPml)
+    {
+        $this->drillPmlId = $idPml;
     }
 
     public function resetDrillKec()
@@ -148,14 +166,22 @@ class MonitoringDashboard extends Component
         $this->drillSlsId = '';
     }
 
-    /**
-     * Get processed & filtered assignments collection.
-     */
-    protected function getFilteredAssignments(AssignmentRepository $assignmentRepo)
+    public function resetDrillPml()
     {
+        $this->drillPmlId = '';
+    }
+
+    /**
+     * Computed property for filtered assignments.
+     * Caches within the single request execution context.
+     */
+    #[Computed]
+    public function filteredAssignments()
+    {
+        $assignmentRepo = app(AssignmentRepository::class);
         $assignments = $assignmentRepo->getAllWithRelations();
 
-        // 1. Apply Filters
+        // Apply Filters
         if ($this->kecFilter) {
             $assignments = $assignments->filter(fn($a) => $a->subsls->sls->village->idkec === $this->kecFilter);
         }
@@ -174,15 +200,14 @@ class MonitoringDashboard extends Component
         if ($this->keywordFilter) {
             $kw = strtolower($this->keywordFilter);
             $assignments = $assignments->filter(function($a) use ($kw) {
-                return str_contains(strtolower($a->subsls->idsubsls), $kw) ||
-                       str_contains(strtolower($a->subsls->sls->nmsls), $kw) ||
-                       str_contains(strtolower($a->subsls->sls->village->nmdesa), $kw) ||
-                       str_contains(strtolower($a->pcl->nama), $kw) ||
-                       str_contains(strtolower($a->pml->nama), $kw);
+                return str_contains(strtolower($a->subsls->sls->village->district->nmkec ?? ''), $kw) ||
+                       str_contains(strtolower($a->subsls->sls->village->nmdesa ?? ''), $kw) ||
+                       str_contains(strtolower($a->subsls->sls->village->iddesa ?? ''), $kw) ||
+                       str_contains(strtolower($a->pml->nama ?? ''), $kw);
             });
         }
 
-        // 2. Map report values based on dateFilter
+        // Map report values based on dateFilter
         $assignments = $assignments->map(function ($a) {
             $reports = $a->dailyReports;
             if ($this->dateFilter) {
@@ -198,6 +223,265 @@ class MonitoringDashboard extends Component
         });
 
         return $assignments;
+    }
+
+    /**
+     * Computed property for assignments used specifically in the Drill-Down panel.
+     * Caches within the single request execution context.
+     * Recalculates only when administrative/PML filters change, ignoring date and keyword filters.
+     */
+    #[Computed]
+    public function drillAssignments()
+    {
+        $assignmentRepo = app(AssignmentRepository::class);
+        $assignments = $assignmentRepo->getAllWithRelations();
+
+        if ($this->kecFilter) {
+            $assignments = $assignments->filter(fn($a) => $a->subsls->sls->village->idkec === $this->kecFilter);
+        }
+        if ($this->desaFilter) {
+            $assignments = $assignments->filter(fn($a) => $a->subsls->sls->village->iddesa === $this->desaFilter);
+        }
+        if ($this->pmlFilter) {
+            $assignments = $assignments->filter(fn($a) => (int)$a->pml_id === (int)$this->pmlFilter);
+        }
+
+        // Map cumulative report values (ignores dateFilter completely!)
+        $assignments = $assignments->map(function ($a) {
+            $reports = $a->dailyReports;
+            $a->usaha_realisasi = $reports->sum('usaha_today');
+            $a->ruta_realisasi = $reports->sum('ruta_today');
+            $a->progress_pct = $a->target_usaha > 0 ? ($a->usaha_realisasi / $a->target_usaha) * 100 : 0;
+            return $a;
+        });
+
+        return $assignments;
+    }
+
+    /**
+     * Computed property for Drill-down data.
+     */
+    #[Computed]
+    public function drillData()
+    {
+        $filtered = $this->drillAssignments;
+        $drillData = collect();
+
+        if ($this->monitoringLevel === 'desa') {
+            if (!$this->drillDesaId) {
+                $villages = $this->kecFilter 
+                    ? Village::where('idkec', $this->kecFilter)->orderBy('nmdesa')->get() 
+                    : Village::orderBy('nmdesa')->get();
+
+                $drillData = $villages->map(function ($v) use ($filtered) {
+                    $subFiltered = $filtered->filter(fn($a) => $a->subsls->sls->iddesa === $v->iddesa);
+                    $target = $subFiltered->sum('target_usaha');
+                    $realisasi = $subFiltered->sum('usaha_realisasi');
+                    $pct = $target > 0 ? ($realisasi / $target) * 100 : 0;
+                    return [
+                        'id' => $v->iddesa,
+                        'name' => $v->nmdesa,
+                        'target' => $target,
+                        'realisasi' => $realisasi,
+                        'percentage' => round($pct, 2),
+                        'color' => $this->getProgressColor($pct),
+                    ];
+                });
+            } elseif ($this->drillDesaId && !$this->drillSlsId) {
+                $slss = Sls::where('iddesa', $this->drillDesaId)->orderBy('nmsls')->get();
+                $drillData = $slss->map(function ($s) use ($filtered) {
+                    $subFiltered = $filtered->filter(fn($a) => $a->subsls->idsls === $s->idsls);
+                    $target = $subFiltered->sum('target_usaha');
+                    $realisasi = $subFiltered->sum('usaha_realisasi');
+                    $pct = $target > 0 ? ($realisasi / $target) * 100 : 0;
+                    return [
+                        'id' => $s->idsls,
+                        'name' => $s->nmsls,
+                        'target' => $target,
+                        'realisasi' => $realisasi,
+                        'percentage' => round($pct, 2),
+                        'color' => $this->getProgressColor($pct),
+                    ];
+                });
+            } else {
+                $subFiltered = $filtered->filter(fn($a) => $a->subsls->idsls === $this->drillSlsId);
+                $drillData = $subFiltered->map(function ($a) {
+                    return [
+                        'id' => $a->subsls->idsubsls,
+                        'name' => 'SubSLS ' . $a->subsls->kdsubsls . ' (PCL: ' . ($a->pcl->nama ?? '-') . ')',
+                        'target' => $a->target_usaha,
+                        'realisasi' => $a->usaha_realisasi,
+                        'percentage' => round($a->progress_pct, 2),
+                        'color' => $this->getProgressColor($a->progress_pct),
+                    ];
+                });
+            }
+        } elseif ($this->monitoringLevel === 'pml') {
+            if (!$this->drillPmlId) {
+                $pmls = $this->pmlFilter 
+                    ? Pml::where('id', $this->pmlFilter)->orderBy('nama')->get() 
+                    : Pml::orderBy('nama')->get();
+
+                $drillData = $pmls->map(function ($p) use ($filtered) {
+                    $subFiltered = $filtered->filter(fn($a) => (int)$a->pml_id === (int)$p->id);
+                    $target = $subFiltered->sum('target_usaha');
+                    $realisasi = $subFiltered->sum('usaha_realisasi');
+                    $pct = $target > 0 ? ($realisasi / $target) * 100 : 0;
+                    return [
+                        'id' => $p->id,
+                        'name' => $p->nama,
+                        'target' => $target,
+                        'realisasi' => $realisasi,
+                        'percentage' => round($pct, 2),
+                        'color' => $this->getProgressColor($pct),
+                    ];
+                });
+            } else {
+                $subFiltered = $filtered->filter(fn($a) => (int)$a->pml_id === (int)$this->drillPmlId);
+                $drillData = $subFiltered->map(function ($a) {
+                    return [
+                        'id' => $a->subsls->idsubsls,
+                        'name' => 'SubSLS ' . $a->subsls->kdsubsls . ' (PCL: ' . ($a->pcl->nama ?? '-') . ')',
+                        'target' => $a->target_usaha,
+                        'realisasi' => $a->usaha_realisasi,
+                        'percentage' => round($a->progress_pct, 2),
+                        'color' => $this->getProgressColor($a->progress_pct),
+                    ];
+                });
+            }
+        } else {
+            // monitoringLevel = kec
+            if ($this->drillKecId && !$this->drillDesaId) {
+                $villages = Village::where('idkec', $this->drillKecId)->orderBy('nmdesa')->get();
+                $drillData = $villages->map(function ($v) use ($filtered) {
+                    $subFiltered = $filtered->filter(fn($a) => $a->subsls->sls->iddesa === $v->iddesa);
+                    $target = $subFiltered->sum('target_usaha');
+                    $realisasi = $subFiltered->sum('usaha_realisasi');
+                    $pct = $target > 0 ? ($realisasi / $target) * 100 : 0;
+                    return [
+                        'id' => $v->iddesa,
+                        'name' => $v->nmdesa,
+                        'target' => $target,
+                        'realisasi' => $realisasi,
+                        'percentage' => round($pct, 2),
+                        'color' => $this->getProgressColor($pct),
+                    ];
+                });
+            } elseif ($this->drillKecId && $this->drillDesaId && !$this->drillSlsId) {
+                $slss = Sls::where('iddesa', $this->drillDesaId)->orderBy('nmsls')->get();
+                $drillData = $slss->map(function ($s) use ($filtered) {
+                    $subFiltered = $filtered->filter(fn($a) => $a->subsls->idsls === $s->idsls);
+                    $target = $subFiltered->sum('target_usaha');
+                    $realisasi = $subFiltered->sum('usaha_realisasi');
+                    $pct = $target > 0 ? ($realisasi / $target) * 100 : 0;
+                    return [
+                        'id' => $s->idsls,
+                        'name' => $s->nmsls,
+                        'target' => $target,
+                        'realisasi' => $realisasi,
+                        'percentage' => round($pct, 2),
+                        'color' => $this->getProgressColor($pct),
+                    ];
+                });
+            } elseif ($this->drillKecId && $this->drillDesaId && $this->drillSlsId) {
+                $subFiltered = $filtered->filter(fn($a) => $a->subsls->idsls === $this->drillSlsId);
+                $drillData = $subFiltered->map(function ($a) {
+                    return [
+                        'id' => $a->subsls->idsubsls,
+                        'name' => 'SubSLS ' . $a->subsls->kdsubsls . ' (PCL: ' . ($a->pcl->nama ?? '-') . ')',
+                        'target' => $a->target_usaha,
+                        'realisasi' => $a->usaha_realisasi,
+                        'percentage' => round($a->progress_pct, 2),
+                        'color' => $this->getProgressColor($a->progress_pct),
+                    ];
+                });
+            } else {
+                $districts = $this->kecFilter 
+                    ? District::where('idkec', $this->kecFilter)->orderBy('nmkec')->get() 
+                    : District::orderBy('nmkec')->get();
+
+                $drillData = $districts->map(function ($d) use ($filtered) {
+                    $subFiltered = $filtered->filter(fn($a) => $a->subsls->sls->village->idkec === $d->idkec);
+                    $target = $subFiltered->sum('target_usaha');
+                    $realisasi = $subFiltered->sum('usaha_realisasi');
+                    $pct = $target > 0 ? ($realisasi / $target) * 100 : 0;
+                    return [
+                        'id' => $d->idkec,
+                        'name' => $d->nmkec,
+                        'target' => $target,
+                        'realisasi' => $realisasi,
+                        'percentage' => round($pct, 2),
+                        'color' => $this->getProgressColor($pct),
+                    ];
+                });
+            }
+        }
+
+        return $drillData;
+    }
+
+    /**
+     * Computed property for Drill-down Active Level.
+     */
+    #[Computed]
+    public function drillLevel()
+    {
+        if ($this->monitoringLevel === 'desa') {
+            if (!$this->drillDesaId) {
+                return 'desa';
+            } elseif ($this->drillDesaId && !$this->drillSlsId) {
+                return 'sls';
+            }
+            return 'subsls';
+        } elseif ($this->monitoringLevel === 'pml') {
+            if (!$this->drillPmlId) {
+                return 'pml';
+            }
+            return 'subsls';
+        }
+
+        // monitoringLevel = kec
+        if ($this->drillKecId && !$this->drillDesaId) {
+            return 'desa';
+        } elseif ($this->drillKecId && $this->drillDesaId && !$this->drillSlsId) {
+            return 'sls';
+        } elseif ($this->drillKecId && $this->drillDesaId && $this->drillSlsId) {
+            return 'subsls';
+        }
+        return 'kec';
+    }
+
+    /**
+     * Computed property for Histogram aggregations.
+     */
+    #[Computed]
+    public function histogramData()
+    {
+        if (!in_array($this->monitoringLevel, ['kec', 'desa', 'pml'])) {
+            $this->monitoringLevel = 'kec';
+        }
+
+        $filtered = $this->filteredAssignments;
+        $monitoringService = app(MonitoringService::class);
+
+        if ($this->monitoringLevel === 'kec') {
+            return $monitoringService->getProgressByKecamatan($filtered);
+        } elseif ($this->monitoringLevel === 'desa') {
+            return $monitoringService->getProgressByDesa($filtered);
+        } elseif ($this->monitoringLevel === 'pml') {
+            return $monitoringService->getProgressByPml($filtered);
+        }
+
+        return collect();
+    }
+
+    /**
+     * Computed property for Daily Trend categories and series.
+     */
+    #[Computed]
+    public function trendData()
+    {
+        return $this->getTrendTimelineData();
     }
 
     protected function getTrendTimelineData()
@@ -293,116 +577,42 @@ class MonitoringDashboard extends Component
         $this->trendEndDate = Carbon::now()->format('Y-m-d');
     }
 
+    /**
+     * Computed property for overall statistics.
+     */
+    #[Computed]
+    public function stats()
+    {
+        $assignmentRepo = app(AssignmentRepository::class);
+        $monitoringService = app(MonitoringService::class);
+        
+        $all = $assignmentRepo->getAllWithRelations();
+        $mapped = $all->map(function ($a) {
+            $reports = $a->dailyReports;
+            $a->usaha_realisasi = $reports->sum('usaha_today');
+            $a->ruta_realisasi = $reports->sum('ruta_today');
+            $a->progress_pct = $a->target_usaha > 0 ? ($a->usaha_realisasi / $a->target_usaha) * 100 : 0;
+            return $a;
+        });
+        return $monitoringService->getOverallStats($mapped);
+    }
+
     public function render(AssignmentRepository $assignmentRepo, MonitoringService $monitoringService)
     {
-        // 1. GLOBAL Summary Cards (Cached for 60s, never filtered)
-        $stats = Cache::remember('kabupaten_stats', 60, function () use ($assignmentRepo, $monitoringService) {
-            $all = $assignmentRepo->getAllWithRelations();
-            $mapped = $all->map(function ($a) {
-                $reports = $a->dailyReports;
-                $a->usaha_realisasi = $reports->sum('usaha_today');
-                $a->ruta_realisasi = $reports->sum('ruta_today');
-                $a->progress_pct = $a->target_usaha > 0 ? ($a->usaha_realisasi / $a->target_usaha) * 100 : 0;
-                return $a;
-            });
-            return $monitoringService->getOverallStats($mapped);
-        });
+        // 1. GLOBAL Summary Cards
+        $stats = $this->stats;
 
-        // 2. Filtered assignments (for comparison Histogram, rankings)
-        $filtered = $this->getFilteredAssignments($assignmentRepo);
+        // Load instance-level cached Computed Properties
+        $chartProgress = $this->histogramData;
+        $drillData = $this->drillData;
+        $drillLevel = $this->drillLevel;
+        $trendTimeline = $this->trendData;
 
-        // 3. Dynamic Progress Aggregation (Histogram)
-        $chartProgress = collect();
-        if ($this->monitoringLevel === 'kec') {
-            $chartProgress = $monitoringService->getProgressByKecamatan($filtered);
-        } elseif ($this->monitoringLevel === 'desa') {
-            $chartProgress = $monitoringService->getProgressByDesa($filtered);
-        } elseif ($this->monitoringLevel === 'subsls') {
-            $chartProgress = $monitoringService->getProgressBySubsls($filtered);
-        } elseif ($this->monitoringLevel === 'pcl') {
-            $chartProgress = $monitoringService->getProgressByPcl($filtered);
-        } elseif ($this->monitoringLevel === 'pml') {
-            $chartProgress = $monitoringService->getProgressByPml($filtered);
-        }
-
-        // 4. Rankings (Top 10 Tertinggi & Terendah)
+        // Rankings (Top 10 Tertinggi & Terendah)
         $topProgress = $chartProgress->sortByDesc('percentage')->take(10)->values();
         $lowestProgress = $chartProgress->sortBy('percentage')->take(10)->values();
 
-        // 5. Drill-down calculations
-        $drillData = collect();
-        $drillLevel = 'kec';
-
-        if ($this->drillKecId && !$this->drillDesaId) {
-            $drillLevel = 'desa';
-            $villages = Village::where('idkec', $this->drillKecId)->get();
-            $drillData = $villages->map(function ($v) use ($filtered) {
-                $subFiltered = $filtered->filter(fn($a) => $a->subsls->sls->iddesa === $v->iddesa);
-                $target = $subFiltered->sum('target_usaha');
-                $realisasi = $subFiltered->sum('usaha_realisasi');
-                $pct = $target > 0 ? ($realisasi / $target) * 100 : 0;
-                return [
-                    'id' => $v->iddesa,
-                    'name' => $v->nmdesa,
-                    'target' => $target,
-                    'realisasi' => $realisasi,
-                    'percentage' => round($pct, 2),
-                    'color' => $this->getProgressColor($pct),
-                ];
-            });
-        } elseif ($this->drillKecId && $this->drillDesaId && !$this->drillSlsId) {
-            $drillLevel = 'sls';
-            $slss = Sls::where('iddesa', $this->drillDesaId)->get();
-            $drillData = $slss->map(function ($s) use ($filtered) {
-                $subFiltered = $filtered->filter(fn($a) => $a->subsls->idsls === $s->idsls);
-                $target = $subFiltered->sum('target_usaha');
-                $realisasi = $subFiltered->sum('usaha_realisasi');
-                $pct = $target > 0 ? ($realisasi / $target) * 100 : 0;
-                return [
-                    'id' => $s->idsls,
-                    'name' => $s->nmsls,
-                    'target' => $target,
-                    'realisasi' => $realisasi,
-                    'percentage' => round($pct, 2),
-                    'color' => $this->getProgressColor($pct),
-                ];
-            });
-        } elseif ($this->drillKecId && $this->drillDesaId && $this->drillSlsId) {
-            $drillLevel = 'subsls';
-            $subFiltered = $filtered->filter(fn($a) => $a->subsls->idsls === $this->drillSlsId);
-            $drillData = $subFiltered->map(function ($a) {
-                return [
-                    'id' => $a->subsls->idsubsls,
-                    'name' => 'SubSLS ' . $a->subsls->kdsubsls . ' (PCL: ' . ($a->pcl->nama ?? '-') . ')',
-                    'target' => $a->target_usaha,
-                    'realisasi' => $a->usaha_realisasi,
-                    'percentage' => round($a->progress_pct, 2),
-                    'color' => $this->getProgressColor($a->progress_pct),
-                ];
-            });
-        } else {
-            $drillLevel = 'kec';
-            $districts = District::all();
-            $drillData = $districts->map(function ($d) use ($filtered) {
-                $subFiltered = $filtered->filter(fn($a) => $a->subsls->sls->village->idkec === $d->idkec);
-                $target = $subFiltered->sum('target_usaha');
-                $realisasi = $subFiltered->sum('usaha_realisasi');
-                $pct = $target > 0 ? ($realisasi / $target) * 100 : 0;
-                return [
-                    'id' => $d->idkec,
-                    'name' => $d->nmkec,
-                    'target' => $target,
-                    'realisasi' => $realisasi,
-                    'percentage' => round($pct, 2),
-                    'color' => $this->getProgressColor($pct),
-                ];
-            });
-        }
-
-        // 7. Dynamic daily timeline for single-entity Trend Analysis (100% Independent)
-        $trendTimeline = $this->getTrendTimelineData();
-
-        $levelLabel = $this->monitoringLevel === 'kec' ? 'Kecamatan' : ($this->monitoringLevel === 'desa' ? 'Desa' : ($this->monitoringLevel === 'subsls' ? 'SubSLS' : ($this->monitoringLevel === 'pcl' ? 'PCL' : 'PML')));
+        $levelLabel = $this->monitoringLevel === 'kec' ? 'Kecamatan' : ($this->monitoringLevel === 'desa' ? 'Desa' : 'PML');
 
         // Dispatch updated chart options to frontend Alpine chart handler
         $this->dispatch('chart-data-updated', [
@@ -431,6 +641,27 @@ class MonitoringDashboard extends Component
 
     protected function getDrillBreadcrumbs(): array
     {
+        if ($this->monitoringLevel === 'desa') {
+            $crumbs = [['label' => 'Desa', 'action' => 'resetDrillDesa']];
+            if ($this->drillDesaId) {
+                $desaName = Village::where('iddesa', $this->drillDesaId)->first()->nmdesa ?? 'N/A';
+                $crumbs[] = ['label' => $desaName, 'action' => 'resetDrillSls'];
+            }
+            if ($this->drillSlsId) {
+                $slsName = Sls::where('idsls', $this->drillSlsId)->first()->nmsls ?? 'N/A';
+                $crumbs[] = ['label' => $slsName, 'action' => ''];
+            }
+            return $crumbs;
+        } elseif ($this->monitoringLevel === 'pml') {
+            $crumbs = [['label' => 'PML', 'action' => 'resetDrillPml']];
+            if ($this->drillPmlId) {
+                $pmlName = Pml::where('id', $this->drillPmlId)->first()->nama ?? 'N/A';
+                $crumbs[] = ['label' => $pmlName, 'action' => ''];
+            }
+            return $crumbs;
+        }
+
+        // monitoringLevel = kec
         $crumbs = [['label' => 'Kecamatan', 'action' => 'resetDrillKec']];
         if ($this->drillKecId) {
             $kecName = District::where('idkec', $this->drillKecId)->first()->nmkec ?? 'N/A';
@@ -447,3 +678,4 @@ class MonitoringDashboard extends Component
         return $crumbs;
     }
 }
+
