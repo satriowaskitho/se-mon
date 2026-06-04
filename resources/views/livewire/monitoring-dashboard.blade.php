@@ -12,77 +12,79 @@
     <!-- Row 1: Top Statistics Cards -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
         <!-- Target Card -->
-        <div class="p-5 bg-white border border-gray-200 rounded-2xl shadow-sm dark:bg-gray-900 dark:border-gray-800 flex items-center justify-between">
-            <div>
-                <span class="group relative inline-flex items-center gap-1 text-xs font-semibold text-gray-500 uppercase dark:text-gray-400 font-bold cursor-pointer">
+        <div class="p-4 md:p-5 bg-white border border-gray-200 rounded-2xl shadow-sm dark:bg-gray-900 dark:border-gray-800 flex items-start justify-between gap-3 min-w-0 overflow-visible">
+            <div class="flex flex-col min-w-0 flex-1">
+                <span class="group relative inline-flex items-center gap-1 text-xs font-bold text-gray-500 uppercase dark:text-gray-400 cursor-pointer">
                     Total Target Muatan
-                    <svg class="w-3.5 h-3.5 text-gray-400 hover:text-bps-600 dark:hover:text-bps-400 transition-colors" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
+                    <span class="inline-flex items-center justify-center rounded-full w-8 h-8 hover:scale-110 transition duration-150" tabindex="0">
+                        <svg class="w-4 h-4 md:w-5 md:h-5 text-gray-400 hover:text-bps-600 dark:hover:text-bps-400 transition-colors" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </span>
                     <!-- Tooltip Box -->
-                    <span class="absolute bottom-full left-0 mb-2 w-56 hidden group-hover:block bg-gray-900/95 dark:bg-gray-850 border border-gray-800 text-white dark:text-gray-100 text-[10px] font-bold rounded-xl p-2.5 shadow-xl z-30 transition duration-150 normal-case leading-relaxed pointer-events-none">
+                    <span class="absolute top-full mt-2 left-0 translate-x-0 w-fit max-w-[min(220px,calc(100vw-2rem))] md:left-auto md:right-0 origin-top-left md:origin-top-right rounded-xl px-3 py-2 bg-gray-900/95 dark:bg-gray-850 border border-gray-800 text-white dark:text-gray-100 text-[11px] font-bold shadow-2xl backdrop-blur-md transition-all duration-150 scale-95 opacity-0 pointer-events-none z-[120] break-words whitespace-normal normal-case leading-relaxed group-hover:opacity-100 group-hover:scale-100 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:scale-100 group-focus-within:pointer-events-auto group-active:opacity-100 group-active:scale-100 group-active:pointer-events-auto">
                         Estimasi total muatan usaha dari hasil wilkerstat
                     </span>
                 </span>
-                <h3 class="text-2xl font-extrabold text-gray-900 dark:text-white mt-1">
+                <h3 class="text-2xl md:text-3xl font-extrabold tracking-tight leading-none text-gray-900 dark:text-white mt-1.5 md:mt-2">
                     {{ number_format($stats['total_target']) }}
                 </h3>
-                <span class="text-[10px] text-gray-400">Semua Wilayah Tugas</span>
+                <span class="text-[11px] md:text-xs text-gray-500 mt-1 md:mt-1.5 truncate">Semua Wilayah Tugas</span>
             </div>
-            <div class="p-3.5 bg-bps-50 text-bps-600 rounded-xl dark:bg-bps-950/40 dark:text-bps-400">
-                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+            <div class="p-2 md:p-2.5 bg-bps-50 text-bps-600 rounded-2xl dark:bg-bps-950/40 dark:text-bps-400 flex-shrink-0 opacity-90">
+                <svg class="w-8 h-8 md:w-10 md:h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
             </div>
         </div>
 
         <!-- Realisasi Usaha Card -->
-        <div class="p-5 bg-white border border-gray-200 rounded-2xl shadow-sm dark:bg-gray-900 dark:border-gray-800 flex items-center justify-between">
-            <div>
+        <div class="p-4 md:p-5 bg-white border border-gray-200 rounded-2xl shadow-sm dark:bg-gray-900 dark:border-gray-800 flex items-start justify-between gap-3 min-w-0">
+            <div class="flex flex-col min-w-0 flex-1">
                 <span class="text-xs font-semibold text-gray-500 uppercase dark:text-gray-400 font-bold flex items-center gap-1.5">
                     Total Realisasi Usaha
                 </span>
-                <h3 class="text-2xl font-extrabold text-gray-900 dark:text-white mt-1">
+                <h3 class="text-2xl md:text-3xl font-extrabold tracking-tight leading-none text-gray-900 dark:text-white mt-1.5 md:mt-2">
                     {{ number_format($stats['total_realisasi_usaha']) }}
                 </h3>
-                <span class="text-[10px] text-gray-400">Realisasi Lapangan</span>
+                <span class="text-[11px] md:text-xs text-gray-500 mt-1 md:mt-1.5 truncate">Realisasi Lapangan</span>
             </div>
-            <div class="p-3.5 bg-emerald-50 text-emerald-600 rounded-xl dark:bg-emerald-950/40 dark:text-emerald-400">
-                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z"></path></svg>
+            <div class="p-2 md:p-2.5 bg-emerald-50 text-emerald-600 rounded-2xl dark:bg-emerald-950/40 dark:text-emerald-400 flex-shrink-0 opacity-90">
+                <svg class="w-8 h-8 md:w-10 md:h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z"></path></svg>
             </div>
         </div>
 
         <!-- Realisasi Ruta Card -->
-        <div class="p-5 bg-white border border-gray-200 rounded-2xl shadow-sm dark:bg-gray-900 dark:border-gray-800 flex items-center justify-between">
-            <div>
+        <div class="p-4 md:p-5 bg-white border border-gray-200 rounded-2xl shadow-sm dark:bg-gray-900 dark:border-gray-800 flex items-start justify-between gap-3 min-w-0">
+            <div class="flex flex-col min-w-0 flex-1">
                 <span class="text-xs font-semibold text-gray-500 uppercase dark:text-gray-400 font-bold flex items-center gap-1.5">
                     Total Realisasi Ruta
                 </span>
-                <h3 class="text-2xl font-extrabold text-gray-900 dark:text-white mt-1">
+                <h3 class="text-2xl md:text-3xl font-extrabold tracking-tight leading-none text-gray-900 dark:text-white mt-1.5 md:mt-2">
                     {{ number_format($stats['total_realisasi_ruta']) }}
                 </h3>
-                <span class="text-[10px] text-gray-400">Rumah Tangga Tercacah</span>
+                <span class="text-[11px] md:text-xs text-gray-500 mt-1 md:mt-1.5 truncate">Rumah Tangga Tercacah</span>
             </div>
-            <div class="p-3.5 bg-purple-50 text-purple-600 rounded-xl dark:bg-purple-950/40 dark:text-purple-400">
-                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+            <div class="p-2 md:p-2.5 bg-purple-50 text-purple-600 rounded-2xl dark:bg-purple-950/40 dark:text-purple-400 flex-shrink-0 opacity-90">
+                <svg class="w-8 h-8 md:w-10 md:h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
             </div>
         </div>
 
         <!-- Progress Percentage Card -->
-        <div class="p-5 bg-white border border-gray-200 rounded-2xl shadow-sm dark:bg-gray-900 dark:border-gray-800 flex items-center justify-between transition duration-200">
-            <div>
+        <div class="p-4 md:p-5 bg-white border border-gray-200 rounded-2xl shadow-sm dark:bg-gray-900 dark:border-gray-800 flex items-start justify-between gap-3 min-w-0 transition duration-200">
+            <div class="flex flex-col min-w-0 flex-1">
                 <span class="text-xs font-semibold text-gray-500 uppercase dark:text-gray-400 font-bold flex items-center gap-1.5">
                     Progres SE2026
                 </span>
-                <h3 class="text-2xl font-extrabold text-gray-900 dark:text-white mt-1">
+                <h3 class="text-2xl md:text-3xl font-extrabold tracking-tight leading-none text-gray-900 dark:text-white mt-1.5 md:mt-2">
                     @if($hasOperationalData)
                         {{ $stats['percentage'] }}%
                     @else
                         <span class="text-sm font-semibold text-gray-400 dark:text-gray-500">Belum ada data</span>
                     @endif
                 </h3>
-                <span class="text-[10px] text-gray-400">Persentase Kumulatif</span>
+                <span class="text-[11px] md:text-xs text-gray-500 mt-1 md:mt-1.5 truncate">Persentase Kumulatif</span>
             </div>
-            <div class="p-3.5 bg-bps-50 text-bps-600 rounded-xl dark:bg-bps-950/40 dark:text-bps-400">
-                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <div class="p-2 md:p-2.5 bg-bps-50 text-bps-600 rounded-2xl dark:bg-bps-950/40 dark:text-bps-400 flex-shrink-0 opacity-90">
+                <svg class="w-8 h-8 md:w-10 md:h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
                 </svg>
             </div>

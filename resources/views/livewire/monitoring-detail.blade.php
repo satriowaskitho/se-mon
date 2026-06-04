@@ -300,15 +300,15 @@
                             </td>
 
                             <!-- Status Badge -->
-                            <td class="px-6 py-4 text-center">
+                            <td class="px-6 py-4 text-center align-middle min-w-[130px]">
                                 @if($row->progress_pct < 25)
-                                    <span class="px-2.5 py-1 text-[9px] font-bold rounded-full border uppercase bg-red-50 text-red-600 border-red-200 dark:bg-red-950/20 dark:text-red-400 dark:border-red-900">Perlu Perhatian</span>
+                                    <span class="px-3 py-1.5 text-[10px] md:text-[11px] font-bold rounded-full border uppercase inline-flex items-center justify-center whitespace-nowrap leading-none shrink-0 bg-red-50 text-red-600 border-red-200 dark:bg-red-950/20 dark:text-red-400 dark:border-red-900">Perlu Perhatian</span>
                                 @elseif($row->progress_pct < 50)
-                                    <span class="px-2.5 py-1 text-[9px] font-bold rounded-full border uppercase bg-orange-50 text-orange-600 border-orange-200 dark:bg-orange-950/20 dark:text-orange-400 dark:border-orange-900">Rendah</span>
+                                    <span class="px-3 py-1.5 text-[10px] md:text-[11px] font-bold rounded-full border uppercase inline-flex items-center justify-center whitespace-nowrap leading-none shrink-0 bg-orange-50 text-orange-600 border-orange-200 dark:bg-orange-950/20 dark:text-orange-400 dark:border-orange-900">Rendah</span>
                                 @elseif($row->progress_pct < 80)
-                                    <span class="px-2.5 py-1 text-[9px] font-bold rounded-full border uppercase bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-900">Waspada</span>
+                                    <span class="px-3 py-1.5 text-[10px] md:text-[11px] font-bold rounded-full border uppercase inline-flex items-center justify-center whitespace-nowrap leading-none shrink-0 bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-900">Waspada</span>
                                 @else
-                                    <span class="px-2.5 py-1 text-[9px] font-bold rounded-full border uppercase bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-900">Baik</span>
+                                    <span class="px-3 py-1.5 text-[10px] md:text-[11px] font-bold rounded-full border uppercase inline-flex items-center justify-center whitespace-nowrap leading-none shrink-0 bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-900">Baik</span>
                                 @endif
                             </td>
                         </tr>

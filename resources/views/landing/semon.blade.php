@@ -345,9 +345,14 @@
 
                 <!-- Modal Village Breakdown Panel (modal - z-20) -->
                 <div x-show="showKecModal" x-cloak
-                    class="absolute right-6 top-6 bottom-6 w-96 bg-white/95 backdrop-blur-lg border border-orange-100 rounded-3xl z-20 shadow-2xl flex flex-col p-6 overflow-hidden pointer-events-auto"
-                    x-transition>
-                    <div class="flex items-center justify-between border-b border-orange-100 pb-4 mb-4">
+                    class="absolute inset-x-0 bottom-4 mx-auto w-[92vw] max-w-[420px] max-h-[72dvh] h-auto min-h-0 md:left-auto md:right-6 md:top-6 md:bottom-6 md:inset-x-auto md:mx-0 md:w-96 md:max-w-none md:max-h-none md:h-auto md:min-h-0 bg-white/95 backdrop-blur-lg border border-orange-100 rounded-3xl z-20 shadow-2xl flex flex-col p-4 md:p-6 overflow-hidden pointer-events-auto pb-[env(safe-area-inset-bottom,0px)]"
+                    x-transition:enter="transition ease-out duration-300"
+                    x-transition:enter-start="opacity-0 translate-y-8 md:translate-y-0 md:translate-x-8"
+                    x-transition:enter-end="opacity-100 translate-y-0 md:translate-x-0"
+                    x-transition:leave="transition ease-in duration-200"
+                    x-transition:leave-start="opacity-100 translate-y-0 md:translate-x-0"
+                    x-transition:leave-end="opacity-0 translate-y-8 md:translate-y-0 md:translate-x-8">
+                    <div class="sticky top-0 bg-white/95 backdrop-blur-lg z-10 flex items-center justify-between border-b border-orange-100 pb-3 md:pb-4 mb-3 md:mb-4">
                         <div>
                             <span class="text-[10px] font-extrabold text-orange-600 uppercase tracking-widest">Detail
                                 Wilayah</span>
@@ -364,7 +369,7 @@
                     </div>
 
                     <!-- Village breakdown list -->
-                    <div class="flex-1 overflow-y-auto space-y-3.5 pr-1">
+                    <div class="flex-1 overflow-y-auto space-y-2 md:space-y-3.5 pr-1">
                         <template x-if="kecBreakdown.length === 0">
                             <div class="flex flex-col items-center justify-center text-center h-full gap-2">
                                 <span
@@ -374,18 +379,18 @@
                         </template>
                         <template x-for="village in kecBreakdown">
                             <div
-                                class="p-3 bg-orange-50/60 border border-orange-100/80 rounded-2xl flex flex-col gap-2">
-                                <div class="flex items-center justify-between">
-                                    <span class="text-xs font-bold text-gray-800 truncate max-w-[180px]"
+                                class="p-2.5 md:p-3 bg-orange-50/60 border border-orange-100/80 rounded-2xl flex flex-col gap-1.5 md:gap-2">
+                                <div class="flex items-center justify-between gap-2 min-w-0">
+                                    <span class="text-[11px] md:text-xs font-bold text-gray-800 truncate flex-1 min-w-0"
                                         x-text="village.nmdesa"></span>
-                                    <span class="text-xs font-extrabold text-orange-600"
+                                    <span class="text-[11px] md:text-xs font-extrabold text-orange-600 shrink-0"
                                         x-text="Number(village.progress).toFixed(1) + '%'"></span>
                                 </div>
                                 <div class="w-full bg-orange-100 rounded-full h-1 overflow-hidden">
                                     <div class="h-1 rounded-full bg-orange-500"
                                         :style="'width: ' + Math.min(100, village.progress) + '%'"></div>
                                 </div>
-                                <div class="flex items-center justify-between text-[10px] text-gray-500 font-semibold">
+                                <div class="flex items-center justify-between text-[9px] md:text-[10px] text-gray-500 font-semibold">
                                     <span
                                         x-text="'Realisasi: ' + Number(village.realisasi).toLocaleString('id-ID')"></span>
                                     <span x-text="'Target: ' + Number(village.target).toLocaleString('id-ID')"></span>
@@ -404,7 +409,7 @@
             x-transition:enter-start="panel-inactive" x-transition:enter-end="panel-active"
             x-transition:leave="panel-transition" x-transition:leave-start="panel-active"
             x-transition:leave-end="panel-inactive"
-            class="absolute inset-0 w-full h-full flex flex-col justify-between p-6 md:p-12">
+            class="absolute inset-0 w-full h-full flex flex-col justify-between py-[clamp(0.5rem,2.5vh,2rem)] px-[clamp(1rem,4vw,2.5rem)] md:py-12 md:px-12 overflow-hidden">
 
             <!-- Floating Hero Bubbles Background Layer -->
             <div class="hero-bubbles">
@@ -423,112 +428,111 @@
             </div>
 
             <!-- Navbar Header -->
-            <header class="flex flex-col items-center justify-center relative z-10 pt-4 md:pt-0">
-                <div class="flex flex-col items-center gap-2 text-center">
-                    <div class="w-12 h-12 bg-orange-100/80 border border-orange-200/80 rounded-2xl flex items-center justify-center shadow-md">
-                        <svg class="w-7 h-7 text-orange-600 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+            <header class="flex flex-col items-center justify-center relative z-10 pt-2 md:pt-0 flex-shrink-0">
+                <div class="flex flex-col items-center gap-1.5 text-center">
+                    <div class="w-10 h-10 md:w-12 md:h-12 bg-orange-100/80 border border-orange-200/80 rounded-2xl flex items-center justify-center shadow-md">
+                        <svg class="w-6 h-6 md:w-7 md:h-7 text-orange-600 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                             xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                                 d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z">
                             </path>
                         </svg>
                     </div>
-                    <span class="font-extrabold text-2xl tracking-widest text-orange-600 mt-2 flex items-center justify-center gap-1.5">
+                    <span class="font-extrabold text-xl md:text-2xl tracking-widest text-orange-600 mt-1 md:mt-2 flex items-center justify-center gap-1.5">
                         SEMON
-                        <span class="text-xs font-bold text-orange-750 px-2 py-0.5 bg-orange-100/60 border border-orange-200/60 rounded-md">SE2026</span>
+                        <span class="text-[10px] md:text-xs font-bold text-orange-750 px-2 py-0.5 bg-orange-100/60 border border-orange-200/60 rounded-md">SE2026</span>
                     </span>
                 </div>
             </header>
 
             <!-- Center Welcome Panel / Stats Area -->
             <main
-                class="max-w-4xl mx-auto text-center space-y-8 relative z-10 py-12 flex flex-col justify-center flex-1">
-                <div class="space-y-4">
+                class="max-w-4xl mx-auto text-center space-y-[clamp(0.5rem,3vh,2rem)] relative z-10 py-[clamp(0.25rem,2vh,2.5rem)] flex flex-col justify-center flex-grow flex-shrink min-h-0">
+                <div class="space-y-[clamp(0.25rem,1.5vh,1rem)]">
                     <span
-                        class="text-[10px] font-extrabold text-orange-600 uppercase tracking-[0.3em] bg-orange-100/50 px-3 py-1.5 border border-orange-200/60 rounded-full">Sistem
+                        class="inline-flex flex-wrap justify-center text-[10px] font-extrabold text-orange-600 uppercase tracking-[0.2em] bg-orange-100/50 px-3 py-1 border border-orange-200/60 rounded-full leading-normal max-w-[90vw] md:max-w-none text-center">Sistem
                         Monitoring Sensus Ekonomi 2026 BPS Kabupaten Bintan</span>
-                    <h1 class="text-4xl md:text-6xl font-extrabold text-gray-900 tracking-tight leading-none">
+                    <h1 class="text-[clamp(2rem,8vw,4rem)] font-extrabold text-gray-900 tracking-tight leading-none">
                         Transparansi Data<br><span
                             class="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-amber-600">
                             Lapangan Real-time</span>
                     </h1>
-                    <p class="text-sm md:text-base text-gray-600 max-w-xl mx-auto leading-relaxed">SE-MON menyajikan
+                    <p class="text-[clamp(0.8rem,2vw,1rem)] text-gray-600 max-w-xl mx-auto leading-relaxed">SE-MON menyajikan
                         dashboard visual terpusat yang memantau target, realisasi, dan pencacahan rumah tangga di
                         Kabupaten Bintan.</p>
                 </div>
 
                 <!-- COUNTDOWN VIEW (Active before June 19) -->
-                <div x-show="!isLaunched" x-cloak class="space-y-6">
-                    <span class="text-xs text-gray-500 font-extrabold tracking-widest uppercase">Pendataan Lapangan Sensus Ekonomi 2026 Akan Dimulai Dalam:</span>
-                    <div class="grid grid-cols-4 gap-4 max-w-lg mx-auto">
-                        <div class="p-4 bg-white/80 border border-orange-100/85 rounded-2xl backdrop-blur-md shadow-md">
-                            <span class="text-3xl font-extrabold text-gray-900" x-text="countdown.days"></span>
-                            <span class="block text-[10px] text-gray-500 font-bold uppercase mt-1">Hari</span>
+                <div x-show="!isLaunched" x-cloak class="space-y-[clamp(0.25rem,1.5vh,1.5rem)]">
+                    <span class="text-[clamp(10px,1.5vw,12px)] text-gray-500 font-extrabold tracking-widest uppercase block">Pendataan Lapangan Sensus Ekonomi 2026 Akan Dimulai Dalam:</span>
+                    <div class="grid grid-cols-4 gap-2 md:gap-4 max-w-lg mx-auto w-full px-2">
+                        <div class="p-2.5 md:p-4 bg-white/80 border border-orange-100/85 rounded-2xl backdrop-blur-md shadow-md flex flex-col justify-center">
+                            <span class="text-xl md:text-3xl font-extrabold text-gray-900 leading-tight" x-text="countdown.days"></span>
+                            <span class="block text-[8px] md:text-[10px] text-gray-500 font-bold uppercase mt-0.5 md:mt-1">Hari</span>
                         </div>
-                        <div class="p-4 bg-white/80 border border-orange-100/85 rounded-2xl backdrop-blur-md shadow-md">
-                            <span class="text-3xl font-extrabold text-gray-900" x-text="countdown.hours"></span>
-                            <span class="block text-[10px] text-gray-500 font-bold uppercase mt-1">Jam</span>
+                        <div class="p-2.5 md:p-4 bg-white/80 border border-orange-100/85 rounded-2xl backdrop-blur-md shadow-md flex flex-col justify-center">
+                            <span class="text-xl md:text-3xl font-extrabold text-gray-900 leading-tight" x-text="countdown.hours"></span>
+                            <span class="block text-[8px] md:text-[10px] text-gray-500 font-bold uppercase mt-0.5 md:mt-1">Jam</span>
                         </div>
-                        <div class="p-4 bg-white/80 border border-orange-100/85 rounded-2xl backdrop-blur-md shadow-md">
-                            <span class="text-3xl font-extrabold text-gray-900" x-text="countdown.minutes"></span>
-                            <span class="block text-[10px] text-gray-500 font-bold uppercase mt-1">Menit</span>
+                        <div class="p-2.5 md:p-4 bg-white/80 border border-orange-100/85 rounded-2xl backdrop-blur-md shadow-md flex flex-col justify-center">
+                            <span class="text-xl md:text-3xl font-extrabold text-gray-900 leading-tight" x-text="countdown.minutes"></span>
+                            <span class="block text-[8px] md:text-[10px] text-gray-500 font-bold uppercase mt-0.5 md:mt-1">Menit</span>
                         </div>
-                        <div class="p-4 bg-white/80 border border-orange-100/85 rounded-2xl backdrop-blur-md shadow-md">
-                            <span class="text-3xl font-extrabold text-orange-600 animate-pulse"
-                                x-text="countdown.seconds"></span>
-                            <span class="block text-[10px] text-gray-500 font-bold uppercase mt-1">Detik</span>
+                        <div class="p-2.5 md:p-4 bg-white/80 border border-orange-100/85 rounded-2xl backdrop-blur-md shadow-md flex flex-col justify-center">
+                            <span class="text-xl md:text-3xl font-extrabold text-orange-600 animate-pulse leading-tight" x-text="countdown.seconds"></span>
+                            <span class="block text-[8px] md:text-[10px] text-gray-500 font-bold uppercase mt-0.5 md:mt-1">Detik</span>
                         </div>
                     </div>
                 </div>
 
                 <!-- LIVE STATS VIEW (Active after June 15) -->
-                <div x-show="isLaunched" x-cloak class="space-y-4">
+                <div x-show="isLaunched" x-cloak class="space-y-[clamp(0.25rem,1.5vh,1rem)]">
                     <span
-                        class="text-xs text-orange-600 font-extrabold tracking-widest uppercase flex items-center justify-center gap-1.5 bg-orange-100/50 px-4 py-1.5 border border-orange-200/50 rounded-full w-fit mx-auto animate-pulse">
+                        class="text-[10px] md:text-xs text-orange-600 font-extrabold tracking-widest uppercase flex items-center justify-center gap-1.5 bg-orange-100/50 px-3.5 py-1 md:px-4 md:py-1.5 border border-orange-200/50 rounded-full w-fit mx-auto animate-pulse">
                         <span class="w-2.5 h-2.5 bg-orange-500 rounded-full animate-ping"></span>
                         Pelaksanaan SE2026 Sedang Berlangsung
                     </span>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 max-w-3xl mx-auto w-full px-2">
                         <!-- Target -->
                         <div
-                            class="p-4 bg-white/80 border border-orange-100/85 rounded-2xl backdrop-blur-md shadow-md flex flex-col justify-center">
-                            <span class="text-xs text-gray-500 font-bold uppercase">Total Target</span>
-                            <span class="text-2xl font-extrabold text-gray-900 mt-1"
+                            class="p-2.5 md:p-4 bg-white/80 border border-orange-100/85 rounded-2xl backdrop-blur-md shadow-md flex flex-col justify-center">
+                            <span class="text-[9px] md:text-xs text-gray-500 font-bold uppercase">Total Target</span>
+                            <span class="text-lg md:text-2xl font-extrabold text-gray-900 mt-0.5 md:mt-1 leading-tight"
                                 x-text="Number(stats.total_usaha).toLocaleString('id-ID')">0</span>
                         </div>
                         <!-- Realisasi -->
                         <div
-                            class="p-4 bg-white/80 border border-orange-100/85 rounded-2xl backdrop-blur-md shadow-md flex flex-col justify-center">
-                            <span class="text-xs text-gray-500 font-bold uppercase">Realisasi Usaha</span>
-                            <span class="text-2xl font-extrabold text-orange-600 mt-1"
+                            class="p-2.5 md:p-4 bg-white/80 border border-orange-100/85 rounded-2xl backdrop-blur-md shadow-md flex flex-col justify-center">
+                            <span class="text-[9px] md:text-xs text-gray-500 font-bold uppercase">Realisasi Usaha</span>
+                            <span class="text-lg md:text-2xl font-extrabold text-orange-600 mt-0.5 md:mt-1 leading-tight"
                                 x-text="Number(stats.realisasi).toLocaleString('id-ID')">0</span>
                         </div>
                         <!-- Progress % -->
                         <div
-                            class="p-4 bg-white/80 border border-orange-100/85 rounded-2xl backdrop-blur-md shadow-md flex flex-col justify-center">
-                            <span class="text-xs text-gray-500 font-bold uppercase">Progres Kerja</span>
-                            <span class="text-2xl font-extrabold text-orange-600 mt-1"
+                            class="p-2.5 md:p-4 bg-white/80 border border-orange-100/85 rounded-2xl backdrop-blur-md shadow-md flex flex-col justify-center">
+                            <span class="text-[9px] md:text-xs text-gray-500 font-bold uppercase">Progres Kerja</span>
+                            <span class="text-lg md:text-2xl font-extrabold text-orange-600 mt-0.5 md:mt-1 leading-tight"
                                 x-text="Number(stats.progress).toFixed(2) + '%'">0.00%</span>
                         </div>
                         <!-- SubSLS -->
                         <div
-                            class="p-4 bg-white/80 border border-orange-100/85 rounded-2xl backdrop-blur-md shadow-md flex flex-col justify-center">
-                            <span class="text-xs text-gray-500 font-bold uppercase">Total SubSLS</span>
-                            <span class="text-2xl font-extrabold text-gray-900 mt-1"
+                            class="p-2.5 md:p-4 bg-white/80 border border-orange-100/85 rounded-2xl backdrop-blur-md shadow-md flex flex-col justify-center">
+                            <span class="text-[9px] md:text-xs text-gray-500 font-bold uppercase">Total SubSLS</span>
+                            <span class="text-lg md:text-2xl font-extrabold text-gray-900 mt-0.5 md:mt-1 leading-tight"
                                 x-text="Number(stats.subsls).toLocaleString('id-ID')">751</span>
                         </div>
                     </div>
                     <!-- Empty state notice when progress is empty (Case A) -->
-                    <div x-show="stats.realisasi === 0" class="text-xs text-orange-800 font-bold bg-orange-50/50 px-4 py-2.5 border border-orange-150 rounded-2xl w-fit mx-auto mt-2">
+                    <div x-show="stats.realisasi === 0" class="text-[10px] md:text-xs text-orange-800 font-bold bg-orange-50/50 px-3.5 py-1.5 border border-orange-150 rounded-2xl w-fit mx-auto mt-1">
                         Data lapangan belum tersedia
                     </div>
                 </div>
 
                 <!-- CTA Action Button -->
-                <div class="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4 max-w-lg mx-auto w-full px-4">
+                <div class="pt-2 md:pt-4 flex flex-col sm:flex-row items-center justify-center gap-2 md:gap-4 max-w-lg mx-auto w-full px-4 flex-shrink-0">
                     <button @click="currentPanel = 'map'"
-                        class="w-full sm:w-auto px-6 py-3.5 text-sm font-bold text-gray-700 bg-white border border-orange-200 hover:border-orange-400 hover:bg-orange-50/50 rounded-2xl transition duration-150 flex items-center justify-center gap-2 shadow-md">
-                        <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        class="w-full sm:w-auto px-6 py-2.5 md:py-3.5 text-sm font-bold text-gray-700 bg-white border border-orange-200 hover:border-orange-400 hover:bg-orange-50/50 rounded-2xl transition duration-150 flex items-center justify-center gap-2 shadow-md">
+                        <svg class="w-4 h-4 md:w-5 md:h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                             xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                                 d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z">
@@ -539,8 +543,8 @@
                         Lihat Peta Geospasial Bintan
                     </button>
                     <button @click="currentPanel = 'login'"
-                        class="w-full sm:w-auto px-6 py-3.5 text-sm font-bold text-white bg-orange-600 hover:bg-orange-700 rounded-2xl transition duration-150 flex items-center justify-center gap-2 shadow-lg shadow-orange-600/15">
-                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        class="w-full sm:w-auto px-6 py-2.5 md:py-3.5 text-sm font-bold text-white bg-orange-600 hover:bg-orange-700 rounded-2xl transition duration-150 flex items-center justify-center gap-2 shadow-lg shadow-orange-600/15">
+                        <svg class="w-4 h-4 md:w-5 md:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                             xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                                 d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
@@ -553,7 +557,7 @@
 
             <!-- BPS Bintan Branding Footer -->
             <footer
-                class="flex justify-center text-center text-[11px] text-gray-500 font-bold uppercase tracking-wider relative z-10 border-t border-orange-100/80 pt-6">
+                class="flex justify-center text-center text-[11px] text-gray-500 font-bold uppercase tracking-wider relative z-10 border-t border-orange-100/80 pt-3 md:pt-6 flex-shrink-0">
                 <span>© 2026 TIM TI Badan Pusat Statistik Kabupaten Bintan</span>
             </footer>
         </section>
