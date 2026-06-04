@@ -67,8 +67,10 @@
                 <!-- PML Filter -->
                 <div>
                     <label class="block mb-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400">PML Supervisor</label>
-                    <select wire:model.live="pmlFilter" class="w-full text-sm bg-gray-50 border border-gray-300 rounded-xl p-2.5 dark:bg-gray-800 dark:border-gray-750 dark:text-white focus:ring-bps-500 focus:border-bps-500">
-                        <option value="">Semua PML</option>
+                    <select wire:model.live="pmlFilter" class="w-full text-sm bg-gray-50 border border-gray-300 rounded-xl p-2.5 dark:bg-gray-800 dark:border-gray-750 dark:text-white focus:ring-bps-500 focus:border-bps-500" {{ auth()->user()->role === 'pml' ? 'disabled' : '' }}>
+                        @if(auth()->user()->role !== 'pml')
+                            <option value="">Semua PML</option>
+                        @endif
                         @foreach($pmlList as $pm)
                             <option value="{{ $pm->id }}">{{ $pm->nama }}</option>
                         @endforeach

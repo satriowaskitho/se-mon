@@ -22,22 +22,36 @@ class DailyReportController extends Controller
     }
 
     /**
-     * Display a listing of PCL's reports.
+     * Display a listing of reports.
      */
     public function index(Request $request)
     {
-        if ($request->user()->role !== 'pcl') {
-            return redirect()->route('dashboard');
+        $user = $request->user();
+        $reports = null;
+
+        $isPcl = $user->role === 'pcl';
+        $isPml = $user->role === 'pml';
+        $isAdmin = $user->role === 'admin';
+
+        if ($isPcl) {
+            $pcl = $user->pcl;
+            if (!$pcl) {
+                abort(403, 'PCL profile not found.');
+            }
+            $reports = $this->reportRepo->getHistoryByPcl($pcl->id, 15);
+        } elseif ($isPml) {
+            $pml = $user->pml;
+            if (!$pml) {
+                abort(403, 'PML profile not found.');
+            }
+            $reports = $this->reportRepo->getHistoryByPmlPaginated($pml->id, 15);
+        } elseif ($isAdmin) {
+            $reports = $this->reportRepo->getHistoryForAdminPaginated(15);
+        } else {
+            abort(403, 'Unauthorized.');
         }
 
-        $pcl = $request->user()->pcl;
-        if (!$pcl) {
-            abort(403, 'PCL profile not found.');
-        }
-
-        $reports = $this->reportRepo->getHistoryByPcl($pcl->id, 10);
-
-        return view('pcl.history', compact('reports'));
+        return view('pcl.history', compact('reports', 'isPcl', 'isPml', 'isAdmin'));
     }
 
     /**

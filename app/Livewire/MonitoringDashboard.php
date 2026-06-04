@@ -626,6 +626,8 @@ class MonitoringDashboard extends Component
             'timelineRuta' => $trendTimeline['ruta_series'],
         ]);
 
+        $isOperational = Carbon::now()->greaterThanOrEqualTo(Carbon::parse(config('semon.target_date', '2026-06-15T00:00:00+07:00')));
+
         return view('livewire.monitoring-dashboard', [
             'stats' => $stats,
             'chartProgress' => $chartProgress,
@@ -636,6 +638,7 @@ class MonitoringDashboard extends Component
             'drillBreadcrumbs' => $this->getDrillBreadcrumbs(),
             'trendTimeline' => $trendTimeline,
             'hasOperationalData' => \App\Models\DailyReport::exists(),
+            'isOperational' => $isOperational,
         ]);
     }
 
@@ -678,4 +681,3 @@ class MonitoringDashboard extends Component
         return $crumbs;
     }
 }
-

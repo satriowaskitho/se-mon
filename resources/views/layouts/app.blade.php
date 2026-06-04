@@ -122,20 +122,22 @@
                     @endif
  
                     @if(Auth::user()->role === 'pcl')
-                        <!-- PCL specific menus -->
+                        <!-- Input Harian (PCL only) -->
                         <li>
                             <a href="{{ route('daily-reports.create') }}" class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 group {{ request()->routeIs('daily-reports.create') ? 'bg-bps-50 text-bps-600 dark:bg-bps-950 dark:text-bps-400' : '' }}">
                                 <svg class="w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white {{ request()->routeIs('daily-reports.create') ? 'text-bps-500' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                                 <span class="ms-3">Input Harian</span>
                             </a>
                         </li>
-                        <li>
-                            <a href="{{ route('daily-reports.index') }}" class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 group {{ request()->routeIs('daily-reports.index') ? 'bg-bps-50 text-bps-600 dark:bg-bps-950 dark:text-bps-400' : '' }}">
-                                <svg class="w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white {{ request()->routeIs('daily-reports.index') ? 'text-bps-500' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                <span class="ms-3">Riwayat Input</span>
-                            </a>
-                        </li>
                     @endif
+
+                    <!-- Riwayat Input (All Roles) -->
+                    <li>
+                        <a href="{{ route('daily-reports.index') }}" class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 group {{ request()->routeIs('daily-reports.index') ? 'bg-bps-50 text-bps-600 dark:bg-bps-950 dark:text-bps-400' : '' }}">
+                            <svg class="w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white {{ request()->routeIs('daily-reports.index') ? 'text-bps-500' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <span class="ms-3">Riwayat Input</span>
+                        </a>
+                    </li>
  
                     <!-- Profile -->
                     <li>

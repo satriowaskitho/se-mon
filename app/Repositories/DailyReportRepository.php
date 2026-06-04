@@ -38,4 +38,54 @@ class DailyReportRepository
         ->orderBy('report_date', 'desc')
         ->paginate($perPage);
     }
+
+    /**
+     * Get recent reports under a PML's supervision.
+     */
+    public function getRecentHistoryByPml(int $pmlId, int $limit = 5)
+    {
+        return DailyReport::select(['id', 'report_date', 'assignment_id', 'usaha_today', 'ruta_today', 'notes'])
+            ->whereHas('assignment', function ($q) use ($pmlId) {
+                $q->where('pml_id', $pmlId);
+            })
+            ->with([
+                'assignment.pcl:id,nama',
+                'assignment.subsls.sls.village.district'
+            ])
+            ->orderBy('report_date', 'desc')
+            ->limit($limit)
+            ->get();
+    }
+
+    /**
+     * Get paginated reports under a PML's supervision with minimal fields.
+     */
+    public function getHistoryByPmlPaginated(int $pmlId, int $perPage = 15)
+    {
+        return DailyReport::select(['id', 'report_date', 'assignment_id', 'usaha_today', 'ruta_today', 'notes'])
+            ->whereHas('assignment', function ($q) use ($pmlId) {
+                $q->where('pml_id', $pmlId);
+            })
+            ->with([
+                'assignment.pcl:id,nama',
+                'assignment.subsls.sls.village.district'
+            ])
+            ->orderBy('report_date', 'desc')
+            ->paginate($perPage);
+    }
+
+    /**
+     * Get all paginated reports for Admin with minimal fields.
+     */
+    public function getHistoryForAdminPaginated(int $perPage = 15)
+    {
+        return DailyReport::select(['id', 'report_date', 'assignment_id', 'usaha_today', 'ruta_today', 'notes'])
+            ->with([
+                'assignment.pcl:id,nama',
+                'assignment.subsls.sls.village.district'
+            ])
+            ->orderBy('report_date', 'desc')
+            ->paginate($perPage);
+    }
 }
+

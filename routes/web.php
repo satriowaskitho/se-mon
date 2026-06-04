@@ -32,9 +32,20 @@ Route::get('/monitoring', [DashboardController::class, 'monitoring'])
     ->middleware(['auth'])
     ->name('monitoring');
 
-// PCL Daily Report CRUD
+// PML, PCL, Admin allowed to view history
+Route::get('/daily-reports', [DailyReportController::class, 'index'])
+    ->middleware(['auth'])
+    ->name('daily-reports.index');
+
+// PCL and Admin only CRUD operations
 Route::middleware(['auth', 'role:pcl,admin'])->group(function () {
-    Route::resource('daily-reports', DailyReportController::class);
+    Route::get('/daily-reports/create', [DailyReportController::class, 'create'])->name('daily-reports.create');
+    Route::post('/daily-reports', [DailyReportController::class, 'store'])->name('daily-reports.store');
+    // We register show route if needed or omit. Since DailyReportController has no show method, we don't need it.
+    Route::get('/daily-reports/{daily_report}/edit', [DailyReportController::class, 'edit'])->name('daily-reports.edit');
+    Route::put('/daily-reports/{daily_report}', [DailyReportController::class, 'update'])->name('daily-reports.update');
+    Route::patch('/daily-reports/{daily_report}', [DailyReportController::class, 'update']);
+    Route::delete('/daily-reports/{daily_report}', [DailyReportController::class, 'destroy'])->name('daily-reports.destroy');
 });
 
 // Profile (Breeze default — all roles)
