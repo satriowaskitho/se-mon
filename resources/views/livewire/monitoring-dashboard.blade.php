@@ -1,4 +1,14 @@
 <div class="space-y-6" x-data="{ showFilters: true }">
+    @if($isOperational)
+        <div class="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 dark:bg-emerald-950/20 dark:border-emerald-900/50 dark:text-emerald-400 rounded-xl flex items-center gap-2.5 w-fit">
+            <span class="relative flex h-2 w-2">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <span class="text-xs font-extrabold tracking-wide uppercase">🟢 HARI PENCACAHAN BERLANGSUNG</span>
+        </div>
+    @endif
+
     <!-- Row 1: Top Statistics Cards -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
         <!-- Target Card -->
@@ -14,7 +24,9 @@
                         Estimasi total muatan usaha dari hasil wilkerstat
                     </span>
                 </span>
-                <h3 class="text-2xl font-extrabold text-gray-900 dark:text-white mt-1">{{ number_format($stats['total_target']) }}</h3>
+                <h3 class="text-2xl font-extrabold text-gray-900 dark:text-white mt-1">
+                    {{ number_format($stats['total_target']) }}
+                </h3>
                 <span class="text-[10px] text-gray-400">Semua Wilayah Tugas</span>
             </div>
             <div class="p-3.5 bg-bps-50 text-bps-600 rounded-xl dark:bg-bps-950/40 dark:text-bps-400">
@@ -25,8 +37,12 @@
         <!-- Realisasi Usaha Card -->
         <div class="p-5 bg-white border border-gray-200 rounded-2xl shadow-sm dark:bg-gray-900 dark:border-gray-800 flex items-center justify-between">
             <div>
-                <span class="text-xs font-semibold text-gray-500 uppercase dark:text-gray-400 font-bold">Total Realisasi Usaha</span>
-                <h3 class="text-2xl font-extrabold text-gray-900 dark:text-white mt-1">{{ number_format($stats['total_realisasi_usaha']) }}</h3>
+                <span class="text-xs font-semibold text-gray-500 uppercase dark:text-gray-400 font-bold flex items-center gap-1.5">
+                    Total Realisasi Usaha
+                </span>
+                <h3 class="text-2xl font-extrabold text-gray-900 dark:text-white mt-1">
+                    {{ number_format($stats['total_realisasi_usaha']) }}
+                </h3>
                 <span class="text-[10px] text-gray-400">Realisasi Lapangan</span>
             </div>
             <div class="p-3.5 bg-emerald-50 text-emerald-600 rounded-xl dark:bg-emerald-950/40 dark:text-emerald-400">
@@ -37,8 +53,12 @@
         <!-- Realisasi Ruta Card -->
         <div class="p-5 bg-white border border-gray-200 rounded-2xl shadow-sm dark:bg-gray-900 dark:border-gray-800 flex items-center justify-between">
             <div>
-                <span class="text-xs font-semibold text-gray-500 uppercase dark:text-gray-400 font-bold">Total Realisasi Ruta</span>
-                <h3 class="text-2xl font-extrabold text-gray-900 dark:text-white mt-1">{{ number_format($stats['total_realisasi_ruta']) }}</h3>
+                <span class="text-xs font-semibold text-gray-500 uppercase dark:text-gray-400 font-bold flex items-center gap-1.5">
+                    Total Realisasi Ruta
+                </span>
+                <h3 class="text-2xl font-extrabold text-gray-900 dark:text-white mt-1">
+                    {{ number_format($stats['total_realisasi_ruta']) }}
+                </h3>
                 <span class="text-[10px] text-gray-400">Rumah Tangga Tercacah</span>
             </div>
             <div class="p-3.5 bg-purple-50 text-purple-600 rounded-xl dark:bg-purple-950/40 dark:text-purple-400">
@@ -47,9 +67,11 @@
         </div>
 
         <!-- Progress Percentage Card -->
-        <div class="p-5 bg-white border border-gray-200 rounded-2xl shadow-sm dark:bg-gray-900 dark:border-gray-800 flex items-center justify-between">
+        <div class="p-5 bg-white border border-gray-200 rounded-2xl shadow-sm dark:bg-gray-900 dark:border-gray-800 flex items-center justify-between transition duration-200">
             <div>
-                <span class="text-xs font-semibold text-gray-500 uppercase dark:text-gray-400 font-bold">Progres SE2026</span>
+                <span class="text-xs font-semibold text-gray-500 uppercase dark:text-gray-400 font-bold flex items-center gap-1.5">
+                    Progres SE2026
+                </span>
                 <h3 class="text-2xl font-extrabold text-gray-900 dark:text-white mt-1">
                     @if($hasOperationalData)
                         {{ $stats['percentage'] }}%
@@ -158,7 +180,7 @@
             <span class="text-lg font-bold text-gray-900 dark:text-white">{{ $stats['count_pcl'] }}</span>
         </div>
         <div class="p-4 bg-gray-50 border border-gray-200 rounded-xl dark:bg-gray-900 dark:border-gray-800 flex items-center justify-between">
-            <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Supervisor PML</span>
+            <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Petugas PML</span>
             <span class="text-lg font-bold text-gray-900 dark:text-white">{{ $stats['count_pml'] }}</span>
         </div>
         <div class="p-4 bg-gray-50 border border-gray-200 rounded-xl dark:bg-gray-900 dark:border-gray-800 flex items-center justify-between">
@@ -512,5 +534,4 @@
                 @endif
             </div>
         </div>
-    </div>
 </div>

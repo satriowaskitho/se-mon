@@ -44,11 +44,29 @@ class MonitoringDetail extends Component
     public $pmlList = [];
     public $pclList = [];
 
+    protected function getAssignmentRepo(): \App\Repositories\AssignmentRepository
+    {
+        return app(\App\Repositories\AssignmentRepository::class);
+    }
+
     public function mount()
     {
+        $user = auth()->user();
         $this->districtsList = District::orderBy('nmkec')->get();
-        $this->pmlList = Pml::orderBy('nama')->get();
-        $this->pclList = Pcl::orderBy('nama')->get();
+
+        if ($user->role === 'pml') {
+            $pml = $user->pml;
+            if (!$pml) {
+                abort(403, 'PML profile not found.');
+            }
+            $this->pmlFilter = (string) $pml->id;
+            $this->pmlList = collect([$pml]);
+            $this->pclList = $this->getAssignmentRepo()->getPclsByPml($pml->id);
+        } else {
+            $this->pmlList = Pml::orderBy('nama')->get();
+            $this->pclList = Pcl::orderBy('nama')->get();
+        }
+
         $this->updateVillagesList();
     }
 
@@ -66,6 +84,9 @@ class MonitoringDetail extends Component
 
     public function updatedPmlFilter()
     {
+        if (auth()->user()->role === 'pml') {
+            $this->pmlFilter = (string) auth()->user()->pml->id;
+        }
         $this->resetPage();
     }
 
@@ -113,22 +134,27 @@ class MonitoringDetail extends Component
     {
         $pctExpression = 'CASE WHEN target_usaha > 0 THEN ((SELECT COALESCE(SUM(usaha_today), 0) FROM daily_reports WHERE daily_reports.assignment_id = assignments.id) * 100.0 / target_usaha) ELSE 0 END';
 
-        $query = Assignment::query()
-            ->select('assignments.*')
-            ->selectRaw('(SELECT COALESCE(SUM(usaha_today), 0) FROM daily_reports WHERE daily_reports.assignment_id = assignments.id) as usaha_realisasi')
-            ->selectRaw('(SELECT COALESCE(SUM(ruta_today), 0) FROM daily_reports WHERE daily_reports.assignment_id = assignments.id) as ruta_realisasi')
-            ->selectRaw('(SELECT MAX(report_date) FROM daily_reports WHERE daily_reports.assignment_id = assignments.id) as last_report_date')
-            ->selectRaw($pctExpression . ' as progress_pct')
-            ->join('subsls', 'assignments.idsubsls', '=', 'subsls.idsubsls')
-            ->join('sls', 'subsls.idsls', '=', 'sls.idsls')
-            ->join('villages', 'sls.iddesa', '=', 'villages.iddesa')
-            ->join('districts', 'villages.idkec', '=', 'districts.idkec')
-            ->join('pcls', 'assignments.pcl_id', '=', 'pcls.id')
-            ->join('pmls', 'assignments.pml_id', '=', 'pmls.id')
-            ->with(['pcl', 'pml', 'subsls.sls.village.district']); // Eager load for Blade display
+        // Centered query builder from repository helper
+        $query = $this->getAssignmentRepo()->getMonitoringQueryBuilder();
+
+        $user = auth()->user();
+        if ($user->role === 'pml') {
+            $pml = $user->pml;
+            if ($pml) {
+                $this->pmlFilter = (string) $pml->id;
+                $query->where('assignments.pml_id', $pml->id);
+
+                if ($this->pclFilter) {
+                    $supervisedPclIds = $this->getAssignmentRepo()->getPclsByPml($pml->id)->pluck('id')->toArray();
+                    if (!in_array((int)$this->pclFilter, $supervisedPclIds)) {
+                        $this->pclFilter = '';
+                    }
+                }
+            }
+        }
 
         // Apply filters
-        if ($this->pmlFilter) {
+        if ($user->role !== 'pml' && $this->pmlFilter) {
             $query->where('assignments.pml_id', $this->pmlFilter);
         }
 

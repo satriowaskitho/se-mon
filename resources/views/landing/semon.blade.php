@@ -81,6 +81,187 @@
         .static-radial-overlay {
             background: radial-gradient(circle at 50% 50%, rgba(251, 146, 60, 0.08) 0%, rgba(255, 255, 255, 0) 70%);
         }
+
+        /* Floating soft glass bubbles style */
+        .hero-bubbles {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .bubble-item {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            background: radial-gradient(circle at 30% 30%, rgba(251, 146, 60, 0.45) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(251, 146, 60, 0.15) 100%);
+            border: 1.5px solid rgba(255, 255, 255, 0.45);
+            box-shadow: inset 0 20px 30px rgba(255, 255, 255, 0.35),
+                        inset 15px 0 35px rgba(251, 146, 60, 0.2),
+                        inset -15px 0 35px rgba(255, 255, 255, 0.25),
+                        inset 0 -20px 30px rgba(0, 0, 0, 0.03),
+                        0 20px 40px rgba(251, 146, 60, 0.08);
+            will-change: transform, opacity;
+        }
+
+        /* GPU friendly floating animations */
+        @keyframes float-bubble-1 {
+            0% {
+                transform: translateY(105vh) translateX(0) scale(0.85);
+                opacity: 0;
+            }
+            8% {
+                opacity: 0.25;
+            }
+            50% {
+                transform: translateY(50vh) translateX(30px) scale(1.1);
+                opacity: 0.45;
+            }
+            92% {
+                opacity: 0.25;
+            }
+            100% {
+                transform: translateY(-20vh) translateX(-15px) scale(0.85);
+                opacity: 0;
+            }
+        }
+
+        @keyframes float-bubble-2 {
+            0% {
+                transform: translateY(105vh) translateX(0) scale(1.1);
+                opacity: 0;
+            }
+            12% {
+                opacity: 0.3;
+            }
+            45% {
+                transform: translateY(55vh) translateX(-35px) scale(0.85);
+                opacity: 0.5;
+            }
+            88% {
+                opacity: 0.25;
+            }
+            100% {
+                transform: translateY(-20vh) translateX(25px) scale(1.15);
+                opacity: 0;
+            }
+        }
+
+        .bubble-1 {
+            width: 140px;
+            height: 140px;
+            left: 5%;
+            animation: float-bubble-1 28s infinite linear;
+        }
+        .bubble-2 {
+            width: 90px;
+            height: 90px;
+            left: 22%;
+            animation: float-bubble-2 22s infinite linear;
+            animation-delay: -3s;
+        }
+        .bubble-3 {
+            width: 190px;
+            height: 190px;
+            left: 40%;
+            animation: float-bubble-1 35s infinite linear;
+            animation-delay: -7s;
+        }
+        .bubble-4 {
+            width: 110px;
+            height: 110px;
+            left: 58%;
+            animation: float-bubble-2 24s infinite linear;
+            animation-delay: -11s;
+        }
+        .bubble-5 {
+            width: 160px;
+            height: 160px;
+            left: 72%;
+            animation: float-bubble-1 31s infinite linear;
+            animation-delay: -5s;
+        }
+        .bubble-6 {
+            width: 80px;
+            height: 80px;
+            left: 85%;
+            animation: float-bubble-2 20s infinite linear;
+            animation-delay: -2s;
+        }
+        .bubble-7 {
+            width: 130px;
+            height: 130px;
+            left: 15%;
+            animation: float-bubble-1 32s infinite linear;
+            animation-delay: -15s;
+        }
+        .bubble-8 {
+            width: 220px;
+            height: 220px;
+            left: 50%;
+            animation: float-bubble-2 40s infinite linear;
+            animation-delay: -18s;
+        }
+        .bubble-9 {
+            width: 70px;
+            height: 70px;
+            left: 33%;
+            animation: float-bubble-1 18s infinite linear;
+            animation-delay: -9s;
+        }
+        .bubble-10 {
+            width: 120px;
+            height: 120px;
+            left: 65%;
+            animation: float-bubble-2 26s infinite linear;
+            animation-delay: -14s;
+        }
+        .bubble-11 {
+            width: 100px;
+            height: 100px;
+            left: 80%;
+            animation: float-bubble-1 21s infinite linear;
+            animation-delay: -6s;
+        }
+        .bubble-12 {
+            width: 150px;
+            height: 150px;
+            left: 92%;
+            animation: float-bubble-2 33s infinite linear;
+            animation-delay: -12s;
+        }
+
+        /* Interactive cursor bubble styles */
+        .cursor-bubble {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            background: radial-gradient(circle at 30% 30%, rgba(251, 146, 60, 0.5) 0%, rgba(255, 255, 255, 0.1) 60%, rgba(251, 146, 60, 0.15) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3),
+                        0 4px 8px rgba(251, 146, 60, 0.08);
+            animation: cursor-float 1.2s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+            will-change: transform, opacity;
+            z-index: 1;
+        }
+
+        @keyframes cursor-float {
+            0% {
+                transform: translateY(0) scale(0.6);
+                opacity: 0;
+            }
+            15% {
+                opacity: 0.75;
+                transform: translateY(-10px) scale(1);
+            }
+            100% {
+                transform: translateY(-80px) translateX(var(--drift-x, 0px)) scale(0.4);
+                opacity: 0;
+            }
+        }
     </style>
 </head>
 
@@ -225,6 +406,22 @@
             x-transition:leave-end="panel-inactive"
             class="absolute inset-0 w-full h-full flex flex-col justify-between p-6 md:p-12">
 
+            <!-- Floating Hero Bubbles Background Layer -->
+            <div class="hero-bubbles">
+                <div class="bubble-item bubble-1"></div>
+                <div class="bubble-item bubble-2"></div>
+                <div class="bubble-item bubble-3"></div>
+                <div class="bubble-item bubble-4"></div>
+                <div class="bubble-item bubble-5"></div>
+                <div class="bubble-item bubble-6"></div>
+                <div class="bubble-item bubble-7"></div>
+                <div class="bubble-item bubble-8"></div>
+                <div class="bubble-item bubble-9"></div>
+                <div class="bubble-item bubble-10"></div>
+                <div class="bubble-item bubble-11"></div>
+                <div class="bubble-item bubble-12"></div>
+            </div>
+
             <!-- Navbar Header -->
             <header class="flex flex-col items-center justify-center relative z-10 pt-4 md:pt-0">
                 <div class="flex flex-col items-center gap-2 text-center">
@@ -249,15 +446,15 @@
                 <div class="space-y-4">
                     <span
                         class="text-[10px] font-extrabold text-orange-600 uppercase tracking-[0.3em] bg-orange-100/50 px-3 py-1.5 border border-orange-200/60 rounded-full">Sistem
-                        Monitoring Sensus Ekonomi 2026</span>
+                        Monitoring Sensus Ekonomi 2026 BPS Kabupaten Bintan</span>
                     <h1 class="text-4xl md:text-6xl font-extrabold text-gray-900 tracking-tight leading-none">
-                        Transparansi Data &<br><span
-                            class="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-amber-600">Efisiensi
+                        Transparansi Data<br><span
+                            class="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-amber-600">
                             Lapangan Real-time</span>
                     </h1>
                     <p class="text-sm md:text-base text-gray-600 max-w-xl mx-auto leading-relaxed">SE-MON menyajikan
                         dashboard visual terpusat yang memantau target, realisasi, dan pencacahan rumah tangga di
-                        Kabupaten Bintan secara presisi.</p>
+                        Kabupaten Bintan.</p>
                 </div>
 
                 <!-- COUNTDOWN VIEW (Active before June 19) -->
@@ -357,7 +554,7 @@
             <!-- BPS Bintan Branding Footer -->
             <footer
                 class="flex justify-center text-center text-[11px] text-gray-500 font-bold uppercase tracking-wider relative z-10 border-t border-orange-100/80 pt-6">
-                <span>© 2026 Badan Pusat Statistik Kabupaten Bintan</span>
+                <span>© 2026 TIM TI Badan Pusat Statistik Kabupaten Bintan</span>
             </footer>
         </section>
 
@@ -521,6 +718,9 @@
                     if (this.currentPanel === 'map') {
                         this.initMap();
                     }
+
+                    // Setup interactive cursor hover bubble trail
+                    this.setupMouseTrail();
                 },
 
                 checkLaunch() {
@@ -681,6 +881,51 @@
                             }).addTo(map);
                         })
                         .catch(err => console.error('Error in parallel map loading:', err));
+                },
+
+                setupMouseTrail() {
+                    const homePanel = document.getElementById('homePanel');
+                    if (!homePanel) return;
+
+                    let trailContainer = document.getElementById('bubble-trail-container');
+                    if (!trailContainer) {
+                        trailContainer = document.createElement('div');
+                        trailContainer.id = 'bubble-trail-container';
+                        trailContainer.className = 'absolute inset-0 pointer-events-none overflow-hidden z-[1]';
+                        homePanel.appendChild(trailContainer);
+                    }
+
+                    let lastSpawn = 0;
+                    const throttleMs = 50; // Spawn bubble at most every 50ms
+
+                    homePanel.addEventListener('mousemove', (e) => {
+                        if (this.currentPanel !== 'home') return;
+
+                        const now = Date.now();
+                        if (now - lastSpawn < throttleMs) return;
+                        lastSpawn = now;
+
+                        const rect = homePanel.getBoundingClientRect();
+                        const x = e.clientX - rect.left;
+                        const y = e.clientY - rect.top;
+
+                        const bubble = document.createElement('div');
+                        const size = Math.random() * 12 + 6; // 6px to 18px
+                        bubble.className = 'cursor-bubble';
+                        bubble.style.width = `${size}px`;
+                        bubble.style.height = `${size}px`;
+                        bubble.style.left = `${x - size / 2}px`;
+                        bubble.style.top = `${y - size / 2}px`;
+
+                        const drift = (Math.random() - 0.5) * 50; // -25px to 25px
+                        bubble.style.setProperty('--drift-x', `${drift}px`);
+
+                        trailContainer.appendChild(bubble);
+
+                        bubble.addEventListener('animationend', () => {
+                            bubble.remove();
+                        });
+                    });
                 }
             }));
         });
