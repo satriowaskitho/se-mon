@@ -12,7 +12,6 @@ use App\Models\Assignment;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class SemonDataImport
@@ -29,34 +28,37 @@ class SemonDataImport
         DB::transaction(function () {
             $spreadsheet = IOFactory::load($this->filePath);
 
-            // 1. Clear existing assignments/daily_reports to prevent key duplication on re-seed
-            DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-            Assignment::query()->delete();
-            Pcl::query()->delete();
-            Pml::query()->delete();
-            SubSls::query()->delete();
-            Sls::query()->delete();
-            Village::query()->delete();
-            District::query()->delete();
-            // Delete users with role 'pcl' or 'pml'
-            User::whereIn('role', ['pcl', 'pml'])->delete();
-            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+            // 1. Clear existing master/assignment data before re-seed
+            if (DB::getDriverName() === 'pgsql') {
+                DB::statement('TRUNCATE TABLE assignments, pcls, pmls, sub_sls, sls, villages, districts RESTART IDENTITY CASCADE');
+                User::whereIn('role', ['pcl', 'pml'])->delete();
+            } else {
+                DB::table('assignments')->truncate();
+                DB::table('pcls')->truncate();
+                DB::table('pmls')->truncate();
+                DB::table('sub_sls')->truncate();
+                DB::table('sls')->truncate();
+                DB::table('villages')->truncate();
+                DB::table('districts')->truncate();
+                User::whereIn('role', ['pcl', 'pml'])->delete();
+            }
 
             // 2. Import Districts
             $sheet = $spreadsheet->getSheetByName('districts');
             if ($sheet) {
                 $rows = $sheet->toArray();
-                $header = array_shift($rows);
-                // Columns: ['idkec', 'kdkab', 'nmkab', 'kdkec', 'nmkec']
+                array_shift($rows);
+
                 foreach ($rows as $row) {
                     if (empty($row[0])) continue;
+
                     District::create([
                         'idkec' => trim($row[0]),
                         'kdkab' => trim($row[1]),
                         'nmkab' => trim($row[2]),
                         'kdkec' => trim($row[3]),
                         'nmkec' => trim($row[4]),
-                        'idkab' => '2102', // Derived Province 21 (Kepri) + Kab 02 (Bintan)
+                        'idkab' => '2102',
                     ]);
                 }
             }
@@ -65,10 +67,11 @@ class SemonDataImport
             $sheet = $spreadsheet->getSheetByName('villages');
             if ($sheet) {
                 $rows = $sheet->toArray();
-                $header = array_shift($rows);
-                // Columns: ['iddesa', 'idkec', 'kddesa', 'nmdesa']
+                array_shift($rows);
+
                 foreach ($rows as $row) {
                     if (empty($row[0])) continue;
+
                     Village::create([
                         'iddesa' => trim($row[0]),
                         'idkec' => trim($row[1]),
@@ -82,10 +85,11 @@ class SemonDataImport
             $sheet = $spreadsheet->getSheetByName('sls');
             if ($sheet) {
                 $rows = $sheet->toArray();
-                $header = array_shift($rows);
-                // Columns: ['idsls', 'iddesa', 'kdsls', 'nmsls']
+                array_shift($rows);
+
                 foreach ($rows as $row) {
                     if (empty($row[0])) continue;
+
                     Sls::create([
                         'idsls' => trim($row[0]),
                         'iddesa' => trim($row[1]),
@@ -99,10 +103,11 @@ class SemonDataImport
             $sheet = $spreadsheet->getSheetByName('subsls');
             if ($sheet) {
                 $rows = $sheet->toArray();
-                $header = array_shift($rows);
-                // Columns: ['idsubsls', 'idsubsls_rebuild', 'idsls', 'kdsubsls']
+                array_shift($rows);
+
                 foreach ($rows as $row) {
                     if (empty($row[0])) continue;
+
                     SubSls::create([
                         'idsubsls' => trim($row[0]),
                         'idsls' => trim($row[2]),
@@ -116,14 +121,13 @@ class SemonDataImport
             $pmlMapByName = [];
             if ($sheet) {
                 $rows = $sheet->toArray();
-                $header = array_shift($rows);
-                // Columns: ['nama', 'pml_id']
+                array_shift($rows);
+
                 foreach ($rows as $row) {
                     if (empty($row[1])) continue;
-                    $nama = trim($row[0]);
-                    $pmlId = (int)$row[1];
 
-                    // Generate account: lowercase name without spaces + 123
+                    $nama = trim($row[0]);
+                    $pmlId = (int) $row[1];
                     $username = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $nama));
                     $email = $username . '@semon.id';
                     $password = $username . '123';
@@ -150,14 +154,13 @@ class SemonDataImport
             $pclMapByName = [];
             if ($sheet) {
                 $rows = $sheet->toArray();
-                $header = array_shift($rows);
-                // Columns: ['nama', 'pcl_id']
+                array_shift($rows);
+
                 foreach ($rows as $row) {
                     if (empty($row[1])) continue;
-                    $nama = trim($row[0]);
-                    $pclId = (int)$row[1];
 
-                    // Generate account: lowercase name without spaces + 123
+                    $nama = trim($row[0]);
+                    $pclId = (int) $row[1];
                     $username = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $nama));
                     $email = $username . '@semon.id';
                     $password = $username . '123';
@@ -183,19 +186,18 @@ class SemonDataImport
             $sheet = $spreadsheet->getSheetByName('assignments');
             if ($sheet) {
                 $rows = $sheet->toArray();
-                $header = array_shift($rows);
-                // Columns: ['idsubsls', 'idsls', 'iddesa', 'idkec', 'Muatan Keseluruhan', 'PCL', 'PML']
+                array_shift($rows);
+
                 foreach ($rows as $row) {
                     if (empty($row[0])) continue;
+
                     $idsubsls = trim($row[0]);
-                    $targetUsaha = (int)$row[4];
+                    $targetUsaha = (int) $row[4];
                     $pclName = trim($row[5]);
                     $pmlName = trim($row[6]);
 
-                    // Resolve PCL & PML IDs by name (fallback to first record or null if not found)
                     $pclId = $pclMapByName[$pclName] ?? null;
                     if (!$pclId) {
-                        // try case-insensitive search
                         foreach ($pclMapByName as $name => $id) {
                             if (strcasecmp($name, $pclName) === 0) {
                                 $pclId = $id;
