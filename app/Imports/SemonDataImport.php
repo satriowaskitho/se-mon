@@ -28,20 +28,29 @@ class SemonDataImport
         DB::transaction(function () {
             $spreadsheet = IOFactory::load($this->filePath);
 
-            // 1. Clear existing master/assignment data before re-seed
+            $tables = [
+                (new Assignment())->getTable(),
+                (new Pcl())->getTable(),
+                (new Pml())->getTable(),
+                (new SubSls())->getTable(),
+                (new Sls())->getTable(),
+                (new Village())->getTable(),
+                (new District())->getTable(),
+            ];
+
             if (DB::getDriverName() === 'pgsql') {
-                DB::statement('TRUNCATE TABLE assignment, pcl, pml, sub_sls, sls, village, district RESTART IDENTITY CASCADE');
-                User::whereIn('role', ['pcl', 'pml'])->delete();
+                $quotedTables = collect($tables)
+                    ->map(fn ($table) => '"' . str_replace('"', '""', $table) . '"')
+                    ->implode(', ');
+
+                DB::statement("TRUNCATE TABLE {$quotedTables} RESTART IDENTITY CASCADE");
             } else {
-                DB::table('assignment')->truncate();
-                DB::table('pcl')->truncate();
-                DB::table('pml')->truncate();
-                DB::table('sub_sls')->truncate();
-                DB::table('sls')->truncate();
-                DB::table('village')->truncate();
-                DB::table('district')->truncate();
-                User::whereIn('role', ['pcl', 'pml'])->delete();
+                foreach ($tables as $table) {
+                    DB::table($table)->truncate();
+                }
             }
+
+            User::whereIn('role', ['pcl', 'pml'])->delete();
 
             // 2. Import Districts
             $sheet = $spreadsheet->getSheetByName('districts');
