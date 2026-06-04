@@ -30,7 +30,7 @@ class SemonDataImport
 
             // 1. Clear existing master/assignment data before re-seed
             if (DB::getDriverName() === 'pgsql') {
-                DB::statement('TRUNCATE TABLE assignments, pcls, pmls, sub_sls, sls, villages, districts RESTART IDENTITY CASCADE');
+                DB::statement('TRUNCATE TABLE assignment, pcl, pml, sub_sls, sls, village, district RESTART IDENTITY CASCADE');
                 User::whereIn('role', ['pcl', 'pml'])->delete();
             } else {
                 DB::table('assignment')->truncate();
