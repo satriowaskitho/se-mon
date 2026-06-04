@@ -10,6 +10,7 @@ use App\Models\DailyReport;
 use App\Models\SubSls;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Carbon;
 use App\Imports\SemonDataImport;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -35,10 +36,15 @@ class DatabaseSeeder extends Seeder
 
         // 2. Clear Daily Reports & recreate Admin account
         $this->command->info("\n=== MEMBERSIHKAN DATA HARIAN & MEMBUAT AKUN ADMIN ===");
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-        DailyReport::truncate();
-        User::where('email', 'admin@semon.id')->delete();
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        Schema::withoutForeignKeyConstraints(function () {
+            if (DB::getDriverName() === 'pgsql') {
+                DB::statement('TRUNCATE TABLE daily_reports RESTART IDENTITY CASCADE');
+            } else {
+                DailyReport::truncate();
+            }
+        
+            User::where('email', 'admin@semon.id')->delete();
+        });
 
         // 3. Create Admin User
         User::create([
