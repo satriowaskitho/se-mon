@@ -33,13 +33,13 @@ class SemonDataImport
                 DB::statement('TRUNCATE TABLE assignments, pcls, pmls, sub_sls, sls, villages, districts RESTART IDENTITY CASCADE');
                 User::whereIn('role', ['pcl', 'pml'])->delete();
             } else {
-                DB::table('assignments')->truncate();
-                DB::table('pcls')->truncate();
-                DB::table('pmls')->truncate();
+                DB::table('assignment')->truncate();
+                DB::table('pcl')->truncate();
+                DB::table('pml')->truncate();
                 DB::table('sub_sls')->truncate();
                 DB::table('sls')->truncate();
-                DB::table('villages')->truncate();
-                DB::table('districts')->truncate();
+                DB::table('village')->truncate();
+                DB::table('district')->truncate();
                 User::whereIn('role', ['pcl', 'pml'])->delete();
             }
 
