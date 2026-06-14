@@ -492,7 +492,7 @@
                         <span class="w-2.5 h-2.5 bg-orange-500 rounded-full animate-ping"></span>
                         Pelaksanaan SE2026 Sedang Berlangsung
                     </span>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 max-w-3xl mx-auto w-full px-2">
+                    <div class="grid grid-cols-3 gap-2 md:gap-4 max-w-2xl mx-auto w-full px-2">
                         <!-- Target -->
                         <div
                             class="p-2.5 md:p-4 bg-white/80 border border-orange-100/85 rounded-2xl backdrop-blur-md shadow-md flex flex-col justify-center">
@@ -513,13 +513,6 @@
                             <span class="text-[9px] md:text-xs text-gray-500 font-bold uppercase">Progres Kerja</span>
                             <span class="text-lg md:text-2xl font-extrabold text-orange-600 mt-0.5 md:mt-1 leading-tight"
                                 x-text="Number(stats.progress).toFixed(2) + '%'">0.00%</span>
-                        </div>
-                        <!-- SubSLS -->
-                        <div
-                            class="p-2.5 md:p-4 bg-white/80 border border-orange-100/85 rounded-2xl backdrop-blur-md shadow-md flex flex-col justify-center">
-                            <span class="text-[9px] md:text-xs text-gray-500 font-bold uppercase">Total SubSLS</span>
-                            <span class="text-lg md:text-2xl font-extrabold text-gray-900 mt-0.5 md:mt-1 leading-tight"
-                                x-text="Number(stats.subsls).toLocaleString('id-ID')">751</span>
                         </div>
                     </div>
                     <!-- Empty state notice when progress is empty (Case A) -->
