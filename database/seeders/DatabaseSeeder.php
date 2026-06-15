@@ -55,6 +55,9 @@ class DatabaseSeeder extends Seeder
         ]);
         $this->command->info("Admin User created successfully: admin@semon.id / admin123");
 
+        // 4. Run standalone PPL/Admin update seeder
+        $this->call(UpdatePplSeeder::class);
+
         // Clean cache after seeding
         \Illuminate\Support\Facades\Cache::forget('kabupaten_stats');
         \Illuminate\Support\Facades\Cache::forget('landing_stats');
