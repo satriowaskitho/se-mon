@@ -14,9 +14,13 @@ class UpdateTargetSeeder extends Seeder
      */
     public function run(): void
     {
-        $file = 'D:\\2026\\10. Sensus Ekonomi\\20260608 Rekap Prelist_21.xlsx';
+        $file = database_path('seeders/files/20260608 Rekap Prelist_21.xlsx');
         if (!file_exists($file)) {
-            $this->command->error("Excel file not found at: {$file}");
+            $file = 'D:\\2026\\10. Sensus Ekonomi\\20260608 Rekap Prelist_21.xlsx';
+        }
+
+        if (!file_exists($file)) {
+            $this->command->error("Excel file not found at local or repo path.");
             return;
         }
 
