@@ -122,6 +122,16 @@
                             </a>
                         </li>
                     @endif
+
+                    @if(Auth::user()->role === 'admin')
+                        <!-- Manajemen User (Admin only) -->
+                        <li>
+                            <a href="{{ route('admin.users.index') }}" class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 group {{ request()->routeIs('admin.users.*') ? 'bg-bps-50 text-bps-600 dark:bg-bps-950 dark:text-bps-400' : '' }}">
+                                <svg class="w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white {{ request()->routeIs('admin.users.*') ? 'text-bps-500' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                <span class="ms-3">Manajemen User</span>
+                            </a>
+                        </li>
+                    @endif
  
                     @if(Auth::user()->role === 'pcl')
                         <!-- Input Harian (PCL only) -->

@@ -1,4 +1,22 @@
 <div class="space-y-6" x-data="{ showFilters: true }">
+    <style>
+        @media (max-width: 767px) {
+            .monitoring-desktop-view {
+                display: none !important;
+            }
+            .monitoring-mobile-view {
+                display: block !important;
+            }
+        }
+        @media (min-width: 768px) {
+            .monitoring-desktop-view {
+                display: block !important;
+            }
+            .monitoring-mobile-view {
+                display: none !important;
+            }
+        }
+    </style>
     <!-- Header Title Section -->
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
@@ -123,8 +141,8 @@
         </div>
     </div>
 
-    <!-- Monitoring Table Card -->
-    <div class="bg-white border border-gray-200 rounded-2xl shadow-sm dark:bg-gray-900 dark:border-gray-800 overflow-hidden">
+    <!-- Monitoring Table Card (Desktop View) -->
+    <div class="monitoring-desktop-view bg-white border border-gray-200 rounded-2xl shadow-sm dark:bg-gray-900 dark:border-gray-800 overflow-hidden">
         <div class="px-6 py-5 border-b border-gray-200 dark:border-gray-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-gray-50/50 dark:bg-gray-900/50">
             <div>
                 <h3 class="text-base font-bold text-gray-900 dark:text-white">Rincian Monitoring Wilayah & Kinerja Petugas</h3>
@@ -347,4 +365,96 @@
             </div>
         @endif
     </div>
+
+    <!-- Monitoring Cards Grid (Mobile View) -->
+    <div class="monitoring-mobile-view space-y-4">
+        @forelse($tableData as $row)
+            <div class="p-5 bg-white border border-gray-200 rounded-2xl shadow-sm dark:bg-gray-900 dark:border-gray-800 space-y-3">
+                <div class="flex items-center justify-between">
+                    <div class="font-bold text-gray-900 dark:text-white text-sm">
+                        {{ $row->idsubsls }}
+                    </div>
+                    <div>
+                        @if($row->progress_pct < 25)
+                            <span class="px-2 py-1 text-[9px] font-bold rounded-full border uppercase bg-red-50 text-red-600 border-red-200 dark:bg-red-950/20 dark:text-red-400 dark:border-red-900">Perlu Perhatian</span>
+                        @elseif($row->progress_pct < 50)
+                            <span class="px-2 py-1 text-[9px] font-bold rounded-full border uppercase bg-orange-50 text-orange-600 border-orange-200 dark:bg-orange-950/20 dark:text-orange-400 dark:border-orange-900">Rendah</span>
+                        @elseif($row->progress_pct < 80)
+                            <span class="px-2 py-1 text-[9px] font-bold rounded-full border uppercase bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-900">Waspada</span>
+                        @else
+                            <span class="px-2 py-1 text-[9px] font-bold rounded-full border uppercase bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-900">Baik</span>
+                        @endif
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                        <span class="text-gray-400">Kecamatan:</span>
+                        <div class="font-semibold text-gray-850 dark:text-gray-200">{{ $row->subsls->sls->village->district->nmkec ?? 'N/A' }}</div>
+                    </div>
+                    <div>
+                        <span class="text-gray-400">Desa:</span>
+                        <div class="font-semibold text-gray-850 dark:text-gray-200">{{ $row->subsls->sls->village->nmdesa ?? 'N/A' }}</div>
+                    </div>
+                </div>
+
+                <div class="text-xs">
+                    <span class="text-gray-400">SLS:</span>
+                    <div class="font-semibold text-gray-850 dark:text-gray-200">{{ $row->subsls->sls->nmsls ?? 'N/A' }}</div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 text-xs pt-1">
+                    <div>
+                        <span class="text-gray-400">PCL:</span>
+                        <div class="font-semibold text-gray-850 dark:text-gray-200">{{ $row->pcl->nama ?? 'N/A' }}</div>
+                    </div>
+                    <div>
+                        <span class="text-gray-400">PML:</span>
+                        <div class="font-semibold text-gray-850 dark:text-gray-200">{{ $row->pml->nama ?? 'N/A' }}</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-2 text-center text-xs pt-2 border-t border-gray-100 dark:border-gray-800">
+                    <div>
+                        <span class="text-gray-400 block mb-0.5">Target</span>
+                        <span class="font-bold text-gray-900 dark:text-white">{{ number_format($row->target_usaha) }}</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-400 block mb-0.5">Real. Usaha</span>
+                        <span class="font-bold text-emerald-600 dark:text-emerald-400">{{ number_format($row->usaha_realisasi) }}</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-400 block mb-0.5">Real. Ruta</span>
+                        <span class="font-bold text-purple-600 dark:text-purple-400">{{ number_format($row->ruta_realisasi) }}</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between text-xs pt-2 border-t border-gray-100 dark:border-gray-800">
+                    <div class="flex items-center gap-1.5 font-bold">
+                        <span class="text-gray-400">Progres:</span>
+                        <span class="text-gray-950 dark:text-white">{{ round($row->progress_pct, 1) }}%</span>
+                    </div>
+                    <div class="text-[10px] text-gray-400">
+                        @if($row->last_report_date)
+                            Act: {{ \Carbon\Carbon::parse($row->last_report_date)->format('d-m-Y') }}
+                        @else
+                            Act: Belum ada
+                        @endif
+                    </div>
+                </div>
+            </div>
+        @empty
+            <div class="p-6 bg-white border border-gray-200 rounded-2xl shadow-sm dark:bg-gray-900 dark:border-gray-800 text-center text-gray-400 dark:text-gray-500">
+                Tidak ada data yang sesuai filter.
+            </div>
+        @endforelse
+
+        <!-- Pagination Mobile -->
+        @if($tableData->hasPages())
+            <div class="p-4 bg-white border border-gray-200 rounded-2xl shadow-sm dark:bg-gray-900 dark:border-gray-800 flex justify-center">
+                {{ $tableData->links() }}
+            </div>
+        @endif
+    </div>
+</div>
 </div>
