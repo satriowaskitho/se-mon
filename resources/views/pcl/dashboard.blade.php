@@ -31,7 +31,7 @@
             <!-- Target Card -->
             <div class="p-6 bg-white border border-gray-200 rounded-2xl shadow-sm dark:bg-gray-900 dark:border-gray-800 flex items-center justify-between">
                 <div>
-                    <span class="text-xs font-semibold text-gray-500 uppercase dark:text-gray-400">Total Target Usaha</span>
+                    <span class="text-xs font-semibold text-gray-500 uppercase dark:text-gray-400">Total Target Muatan</span>
                     <h3 class="text-3xl font-extrabold text-gray-900 dark:text-white mt-1">{{ number_format($stats['total_target']) }}</h3>
                 </div>
                 <div class="p-3 bg-bps-50 text-bps-600 rounded-xl dark:bg-bps-950/40 dark:text-bps-400">

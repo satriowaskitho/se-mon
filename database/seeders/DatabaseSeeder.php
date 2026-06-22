@@ -58,6 +58,12 @@ class DatabaseSeeder extends Seeder
         // 4. Run standalone PPL/Admin update seeder
         $this->call(UpdatePplSeeder::class);
 
+        // 5. Run target update seeder from new Excel
+        $this->call(UpdateTargetSeeder::class);
+
+        // 6. Run Provinsi user seeder
+        $this->call(ProvinsiUserSeeder::class);
+
         // Clean cache after seeding
         \Illuminate\Support\Facades\Cache::forget('kabupaten_stats');
         \Illuminate\Support\Facades\Cache::forget('landing_stats');

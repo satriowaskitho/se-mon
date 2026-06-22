@@ -330,17 +330,17 @@
                     class="absolute bottom-6 left-6 p-4 bg-white/95 backdrop-blur-md border border-orange-100 rounded-2xl z-10 text-xs shadow-lg flex flex-col gap-2.5 max-w-[220px] pointer-events-auto">
                     <span class="font-bold text-gray-800 border-b border-orange-100 pb-1.5">Kategori Progres</span>
                     <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded"
-                            style="background-color: #f97316"></span><span class="text-gray-600 font-semibold">Baik
+                            style="background-color: #16a34a"></span><span class="text-gray-600 font-semibold">Tinggi / Selesai
                             (80%+)</span></div>
                     <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded"
-                            style="background-color: #fb923c"></span><span class="text-gray-600 font-semibold">Waspada
+                            style="background-color: #f97316"></span><span class="text-gray-600 font-semibold">Sedang / Waspada
                             (51% - 80%)</span></div>
                     <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded"
-                            style="background-color: #fdba74"></span><span class="text-gray-600 font-semibold">Rendah
+                            style="background-color: #f87171"></span><span class="text-gray-600 font-semibold">Rendah
                             (21% - 50%)</span></div>
                     <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded"
-                            style="background-color: #fed7aa"></span><span class="text-gray-600 font-semibold">Perlu
-                            Perhatian (0% - 20%)</span></div>
+                            style="background-color: #dc2626"></span><span class="text-gray-600 font-semibold">Perlu Perhatian
+                            (0% - 20%)</span></div>
                 </div>
 
                 <!-- Modal Village Breakdown Panel (modal - z-20) -->
@@ -822,28 +822,33 @@
                             const geojsonLayer = L.geoJSON(geojson, {
                                 style: function (feature) {
                                     const progress = feature.properties.progress || 0;
-                                    let fill = '#fed7aa'; // Else (<=20)
-                                    if (progress > 80) fill = '#f97316';
-                                    else if (progress > 50) fill = '#fb923c';
-                                    else if (progress > 20) fill = '#fdba74';
+                                    let fill = '#dc2626'; // Else (<=20)
+                                    if (progress > 80) fill = '#16a34a';
+                                    else if (progress > 50) fill = '#f97316';
+                                    else if (progress > 20) fill = '#f87171';
 
                                     return {
                                         fillColor: fill,
-                                        weight: 2,
-                                        opacity: 0.8,
-                                        color: '#ea580c',
-                                        fillOpacity: 0.65
+                                        weight: 1.5,
+                                        opacity: 0.9,
+                                        color: '#ffffff',
+                                        fillOpacity: 0.75
                                     };
                                 },
                                 onEachFeature: (feature, layer) => {
                                     const props = feature.properties;
+                                    const progress = props.progress || 0;
+                                    let progressColor = '#dc2626';
+                                    if (progress > 80) progressColor = '#16a34a';
+                                    else if (progress > 50) progressColor = '#f97316';
+                                    else if (progress > 20) progressColor = '#f87171';
 
                                     layer.bindTooltip(
                                         `<div class='text-xs'>` +
-                                        `<div class='font-extrabold text-gray-900 text-sm mb-1 border-b border-orange-100 pb-1'>Kec. ${props.nmkec}</div>` +
+                                        `<div class='font-extrabold text-gray-900 text-sm mb-1 border-b border-gray-100 pb-1'>Kec. ${props.nmkec}</div>` +
                                         `<div class='flex justify-between gap-6 mb-0.5 text-gray-600'><span>Target Usaha:</span><span class='font-bold text-gray-800'>${Number(props.target).toLocaleString('id-ID')}</span></div>` +
                                         `<div class='flex justify-between gap-6 mb-0.5 text-gray-600'><span>Realisasi Usaha:</span><span class='font-bold text-gray-800'>${Number(props.realisasi).toLocaleString('id-ID')}</span></div>` +
-                                        `<div class='flex justify-between gap-6 font-bold mt-1.5 pt-1.5 border-t border-orange-100 text-gray-800'><span>Progress:</span><span class='text-orange-600'>${Number(props.progress).toFixed(2)}%</span></div>` +
+                                        `<div class='flex justify-between gap-6 font-bold mt-1.5 pt-1.5 border-t border-gray-100 text-gray-800'><span>Progress:</span><span style='color: ${progressColor};'>${Number(props.progress).toFixed(2)}%</span></div>` +
                                         `</div>`,
                                         { sticky: true, className: 'map-tooltip' }
                                     );
@@ -852,9 +857,9 @@
                                         mouseover: function (e) {
                                             const l = e.target;
                                             l.setStyle({
-                                                fillOpacity: 0.85,
-                                                weight: 3,
-                                                color: '#ea580c'
+                                                fillOpacity: 0.9,
+                                                weight: 2.5,
+                                                color: '#475569'
                                             });
                                             if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
                                                 l.bringToFront();

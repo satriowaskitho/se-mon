@@ -77,9 +77,11 @@
                                     </p>
                                 </div>
                                 <ul class="py-1" role="none">
+                                    @if(Auth::user()->role !== 'provinsi')
                                     <li>
                                         <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white" role="menuitem">Edit Profil</a>
                                     </li>
+                                    @endif
                                     <li>
                                         <form method="POST" action="{{ route('logout') }}">
                                             @csrf
@@ -131,21 +133,25 @@
                         </li>
                     @endif
 
-                    <!-- Riwayat Input (All Roles) -->
+                    <!-- Riwayat Input (All Roles except provinsi) -->
+                    @if(Auth::user()->role !== 'provinsi')
                     <li>
                         <a href="{{ route('daily-reports.index') }}" class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 group {{ request()->routeIs('daily-reports.index') ? 'bg-bps-50 text-bps-600 dark:bg-bps-950 dark:text-bps-400' : '' }}">
                             <svg class="w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white {{ request()->routeIs('daily-reports.index') ? 'text-bps-500' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                             <span class="ms-3">Riwayat Input</span>
                         </a>
                     </li>
+                    @endif
  
-                    <!-- Profile -->
+                    <!-- Profile (All Roles except provinsi) -->
+                    @if(Auth::user()->role !== 'provinsi')
                     <li>
                         <a href="{{ route('profile.edit') }}" class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 group {{ request()->routeIs('profile.edit') ? 'bg-bps-50 text-bps-600 dark:bg-bps-950 dark:text-bps-400' : '' }}">
                             <svg class="w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white {{ request()->routeIs('profile.edit') ? 'text-bps-500' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                             <span class="ms-3">Profil</span>
                         </a>
                     </li>
+                    @endif
                 </ul>
  
                 <!-- Logout Card in Sidebar Footer -->

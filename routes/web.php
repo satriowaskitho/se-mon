@@ -43,10 +43,12 @@ Route::middleware(['auth', 'prevent-back'])->group(function () {
         Route::delete('/daily-reports/{daily_report}', [DailyReportController::class, 'destroy'])->name('daily-reports.destroy');
     });
 
-    // Profile (Breeze default — all roles)
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    // Profile (Breeze default — all roles except provinsi)
+    Route::middleware(['role:pcl,pml,admin'])->group(function () {
+        Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+        Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+        Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    });
 });
 
 require __DIR__.'/auth.php';

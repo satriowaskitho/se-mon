@@ -96,4 +96,17 @@ class ProfileTest extends TestCase
 
         $this->assertNotNull($user->fresh());
     }
+
+    public function test_provinsi_cannot_access_profile_page(): void
+    {
+        $user = User::factory()->create([
+            'role' => 'provinsi',
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->get('/profile');
+
+        $response->assertStatus(403);
+    }
 }

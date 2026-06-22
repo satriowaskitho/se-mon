@@ -47,7 +47,7 @@
                             <div class="absolute inset-y-0 start-0 flex items-center ps-3.5 pointer-events-none">
                                 <svg class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
                             </div>
-                            <input type="number" id="usaha_today" name="usaha_today" min="0" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-xl focus:ring-bps-500 focus:border-bps-500 block w-full ps-10 p-3  dark:bg-gray-800 dark:border-gray-750 dark:placeholder-gray-400 dark:text-white dark:focus:ring-bps-500 dark:focus:border-bps-500" placeholder="0" value="{{ old('usaha_today', 0) }}" required />
+                            <input type="number" id="usaha_today" name="usaha_today" min=0 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-xl focus:ring-bps-500 focus:border-bps-500 block w-full ps-10 p-3  dark:bg-gray-800 dark:border-gray-750 dark:placeholder-gray-400 dark:text-white dark:focus:ring-bps-500 dark:focus:border-bps-500" placeholder=0 value="{{ old('usaha_today') }}" required />
                         </div>
                         @error('usaha_today')
                             <p class="mt-1 text-xs text-red-600 dark:text-red-400 font-semibold">{{ $message }}</p>
@@ -61,7 +61,7 @@
                             <div class="absolute inset-y-0 start-0 flex items-center ps-3.5 pointer-events-none">
                                 <svg class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
                             </div>
-                            <input type="number" id="ruta_today" name="ruta_today" min="0" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-xl focus:ring-bps-500 focus:border-bps-500 block w-full ps-10 p-3  dark:bg-gray-800 dark:border-gray-750 dark:placeholder-gray-400 dark:text-white dark:focus:ring-bps-500 dark:focus:border-bps-500" placeholder="0" value="{{ old('ruta_today', 0) }}" required />
+                            <input type="number" id="ruta_today" name="ruta_today" min=0 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-xl focus:ring-bps-500 focus:border-bps-500 block w-full ps-10 p-3  dark:bg-gray-800 dark:border-gray-750 dark:placeholder-gray-400 dark:text-white dark:focus:ring-bps-500 dark:focus:border-bps-500" placeholder=0 value="{{ old('ruta_today') }}" required />
                         </div>
                         @error('ruta_today')
                             <p class="mt-1 text-xs text-red-600 dark:text-red-400 font-semibold">{{ $message }}</p>
